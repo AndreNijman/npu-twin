@@ -1,7 +1,7 @@
 # models / weights — too big, redistribute via HF/Zenodo
 project-a/models/
-project-b/models/*.onnx
-project-b/models/*.bin
+project-b/models/**/*.onnx
+project-b/models/**/*.bin
 
 # user data — never commit
 ~/.local/share/presenced/
