@@ -45,4 +45,5 @@ class Config:
             face_backend=s("PRESENCED_FACE_BACKEND", "opencv-haar"),
             gaze_enabled=b("PRESENCED_GAZE_ENABLED", False),
             log_level=s("PRESENCED_LOG_LEVEL", "INFO"),
+            xdna_device=Path(s("PRESENCED_XDNA_DEVICE", "/dev/accel/accel0")),
         )
