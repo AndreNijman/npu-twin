@@ -38,12 +38,21 @@ These are `skipped (opt-in, flag off)`. Not "implemented and untested"
 `scripts/demo.fish` runs one 48-token prompt and reports
 `accept=19.737%`. That is low, and it is *one single short prompt* on
 cold speculative state. The Phase 2 20-prompt bench gives the real
-distribution per class — see `bench/results/20260419T064428Z.json` —
-and a re-bench captured during Phase 7 is recorded in
-[phase-7-rebench-<UTC>](./) (filename lands when the bench run
-completes; see `bench/results/` for the most recent `*.json`).
+distribution per class (`bench/results/20260419T064428Z.json`). A
+Phase 7 re-bench was captured against `v0.1.0`:
+`bench/results/20260419T120223Z.json`.
 
-If the Phase 7 re-bench shows code-class accept rate below 35 %, the
-repo README will carry a "Performance notes" entry calling that out
-explicitly rather than quietly re-running the bench for better
-numbers.
+Phase 7 per-class accept rate (20 prompts, greedy, seed 42):
+
+| class | n | accept | speedup |
+|-------|--:|-------:|--------:|
+| code | 8 | 61.04 % | 1.59× |
+| reasoning | 4 | 62.83 % | 1.62× |
+| factual | 4 | 45.80 % | 1.27× |
+| chat | 4 | 38.01 % | 1.09× |
+| **overall** | 20 | — | **1.43×** |
+
+Code-class accept rate **61.04 %** is well above the 35 % threshold
+at which `v0.1.0` would have shipped a "Performance notes" carve-out
+in the README. The Phase 7 numbers are consistent with Phase 2 (Phase
+2 code: 13.45 t/s / 1.59×; Phase 7 code: 12.72 t/s / 1.59×).
