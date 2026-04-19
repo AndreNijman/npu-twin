@@ -47,6 +47,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   baseline** (chat 0.82 / code 0.71 / factual 0.66 / reasoning
   0.70), both survival probes green, 0 OOM / 0 thermal throttle
   events — **Phase 4 acceptance gate passed**.
+- Phase 5: daily-driver polish.
+  - `project-b/contrib/hypr/presenced.conf` — Hyprland include with
+    `SUPER+SHIFT+P` (toggle `presenced.service` via `systemctl --user`)
+    and `SUPER+L` (manual `loginctl lock-session`). Uses the unit
+    directly because the `presencectl` CLI was scoped out.
+  - `project-b/contrib/waybar/{presenced.sh,config.jsonc,style.css}`
+    — custom-module that reads FSM state from the journal (presenced
+    does not export state externally); 2 s polling; left-click
+    toggles, right-click follows logs in kitty.
+  - `scripts/demo.fish` — non-destructive smoke gate: runs preflight,
+    asserts both `--user` services active, fires one short
+    `llama-speculative` prompt, reports presenced FSM state.
+    Referenced from the README.
+  - `docs/architecture.md` — ASCII dataflow diagram + short sections
+    on why two services and what the NPU does (nothing, today).
+  - Top-level `README.md` — replaces the Phase 0.5 stub. Covers what
+    the project is, hardware tested, status matrix, install/configure
+    for both projects and the Hyprland + waybar drop-ins, benchmark
+    summary (Phase 2 and Phase 4), ADR list, Conventional Commits +
+    no-AI-attribution rules.
+  - **Phase 5 acceptance:** both services enable via
+    `graphical-session.target`; `scripts/demo.fish` exits 0 on a
+    freshly-logged-in session.
 
 ### Changed
 - `scripts/smoke.fish` and `scripts/bench.fish` migrated off `llama-cli`
