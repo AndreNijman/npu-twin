@@ -1,0 +1,7 @@
+{
+  "include": ["presenced", "presencectl", "tests"],
+  "extraPaths": ["."],
+  "pythonVersion": "3.11",
+  "reportMissingImports": "warning",
+  "reportMissingTypeStubs": "none"
+}
