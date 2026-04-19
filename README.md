@@ -49,8 +49,8 @@ Full stack table in [`docs/hardware.md`](docs/hardware.md).
 | 3   | Project B: `presenced` face-presence daemon | ✅ |
 | 4   | Concurrency harness + coexistence gate | ✅ |
 | 5   | Hyprland wiring + README + daily-driver polish | ✅ |
-| 6   | Opportunistic XDNA 1 probe + honest gap writeup | ⏳ |
-| 7   | Demo + `v0.1.0` | ⏳ |
+| 6   | Opportunistic XDNA 1 probe + honest gap writeup | ✅ |
+| 7   | Demo + `v0.1.0` | ✅ |
 
 ## Install
 
