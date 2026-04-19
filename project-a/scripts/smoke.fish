@@ -1,5 +1,5 @@
 #!/usr/bin/env fish
-# Standalone llama-cli smoke test on 780M Vulkan.
+# Standalone llama-completion smoke test on 780M Vulkan.
 # Confirms the target model loads and generates without the server.
 
 set -l here (status dirname)
@@ -16,31 +16,32 @@ if not test -f $target
     exit 1
 end
 
-if not command -q llama-cli
-    echo "error: llama-cli missing. Install: paru -S llama.cpp-vulkan" >&2
+if not command -q llama-completion
+    echo "error: llama-completion missing. Install: paru -S llama.cpp-vulkan" >&2
     exit 1
 end
 
-echo "==> smoke test (target only, 780M Vulkan)"
+set -l log /tmp/npu-twin-smoke.log
+echo "==> smoke test (target only, 780M Vulkan). Log: $log"
 env AMD_VULKAN_ICD=RADV \
-    llama-cli \
+    llama-completion \
         -m $target \
         --device Vulkan0 \
         -ngl 99 \
         -fa on \
         -c 1024 \
-        -no-cnv \
-        -n 32 \
-        -p "Say hi in five words." 2>&1 | tee /tmp/npu-twin-smoke.log
+        -n 48 \
+        --seed 42 \
+        -p "Write a short haiku about a quiet lake." >$log 2>&1
 
-set -l ok 1
-if not grep -q 'graph splits' /tmp/npu-twin-smoke.log
-    echo "warn: 'graph splits' not in output — llama.cpp API may have changed" >&2
-    set ok 0
-end
-
-if grep -qE 'graph splits *= *1\b' /tmp/npu-twin-smoke.log
+if grep -qE 'graph splits[[:space:]]*=[[:space:]]*1\b' $log
     echo "ok: graph splits = 1 (all tensors on GPU)"
+else if grep -q 'graph splits' $log
+    echo "warn: graph splits != 1 — some ops falling back to CPU"
+    grep 'graph splits' $log
 else
-    echo "warn: graph splits != 1 — some ops falling back to CPU" >&2
+    echo "warn: 'graph splits' line not found — llama.cpp output format may differ"
 end
+
+grep -oE 'tokens per second' $log >/dev/null; and grep -oE '[0-9.]+[[:space:]]+tokens per second' $log | head -4
+grep -E 'Generation:' $log | head -2
