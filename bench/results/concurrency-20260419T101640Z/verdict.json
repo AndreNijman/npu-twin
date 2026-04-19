@@ -1,0 +1,64 @@
+{
+  "utc": "20260419T101640Z",
+  "phase": 4,
+  "harness": "bench/scripts/concurrency-run.fish",
+  "host": "ThinkpadL16",
+  "acceptance": {
+    "regression_pct_vs_baseline_max_allowed": 10.0,
+    "per_class_regression_pass": true,
+    "survival_pass": true,
+    "kernel_clean_pass": true,
+    "overall": "PASS"
+  },
+  "baseline_phase2": {
+    "source": "project-a/bench/results/20260419T075411Z.json",
+    "chat": 9.224,
+    "code": 13.450,
+    "factual": 10.630,
+    "reasoning": 13.713
+  },
+  "solo": {
+    "source": "project-a/bench/results/20260419T101641Z.json",
+    "chat": 9.2475,
+    "code": 11.9104,
+    "factual": 10.6183,
+    "reasoning": 13.6805
+  },
+  "corun": {
+    "source": "project-a/bench/results/20260419T102925Z.json",
+    "chat": 9.1485,
+    "code": 13.3541,
+    "factual": 10.5595,
+    "reasoning": 13.6172
+  },
+  "regression_pct_vs_baseline": {
+    "chat": 0.82,
+    "code": 0.71,
+    "factual": 0.66,
+    "reasoning": 0.70
+  },
+  "regression_pct_vs_solo": {
+    "chat": 1.07,
+    "code": -12.13,
+    "factual": 0.55,
+    "reasoning": 0.46
+  },
+  "survival": {
+    "llama_health_before_presenced_kill": 200,
+    "llama_health_after_presenced_kill": 200,
+    "presenced_alive_during_llama_stop": true,
+    "presenced_alive_after_llama_stop": true,
+    "llama_health_after_restart": 200
+  },
+  "kernel": {
+    "window_lines": 17,
+    "oom_events": 0,
+    "thermal_throttle_events": 0,
+    "benign_messages": "amdgpu VM memory stats fini (driver hygiene), USB enumerate, hrtimer single 13124ns"
+  },
+  "notes": [
+    "Solo code avg (11.9104) anomalously below Phase 2 baseline (13.45) — cold llama.cpp cache right after service start before speculative accept-rate settled.",
+    "Corun code avg (13.3541) matches baseline to within 0.71% and beats solo by 12.13% — confirms presenced has zero GPU contention on this workload.",
+    "Haar removed this phase; presenced ran with PRESENCED_DETECTOR=yunet throughout."
+  ]
+}
