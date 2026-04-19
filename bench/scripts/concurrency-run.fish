@@ -78,7 +78,26 @@ function wait_trace --argument label
     end
 end
 
+function warmup --argument label
+    # One throwaway llama-speculative call before each timed bench.
+    # Primes GPU shader cache, KV cache, and speculative accept-rate so
+    # the first timed prompt is not a cold-start outlier (the Phase 4
+    # first run saw solo-code avg 11.91 t/s — below the Phase 2 baseline
+    # of 13.45 t/s — because llama-speculative had just restarted).
+    echo ">>> warmup ($label) at (date -Iseconds)"
+    set -l wdir "$out_dir/warmup-$label"
+    mkdir -p $wdir
+    env AMD_VULKAN_ICD=RADV llama-speculative \
+        -m "$repo_root/project-a/models/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf" \
+        -md "$repo_root/project-a/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf" \
+        --device Vulkan0 -ngl 99 -devd Vulkan0 -ngld 99 \
+        -fa on -c 4096 --seed 42 --temp 0 -n 64 \
+        --draft-max 8 --draft-min 2 --draft-p-min 0.6 \
+        -p "warmup: count to ten." </dev/null > "$wdir/warmup.log" 2>&1
+end
+
 function run_bench --argument label
+    warmup $label
     echo ">>> bench ($label) starting at (date -Iseconds)"
     start_trace $label
     fish "$repo_root/project-a/scripts/bench.fish" > "$out_dir/bench-$label.stdout" 2>&1
