@@ -1,0 +1,12 @@
+/* presenced — waybar style snippet. Append to your waybar style.css. */
+
+#custom-presenced {
+    padding: 0 10px;
+    font-family: "JetBrainsMono Nerd Font", monospace;
+}
+
+#custom-presenced.present { color: #a6e3a1; }   /* green — user at keyboard */
+#custom-presenced.grace   { color: #f9e2af; }   /* amber — in grace window  */
+#custom-presenced.away    { color: #f38ba8; }   /* red   — AWAY action fired */
+#custom-presenced.off     { color: #6c7086; }   /* dim   — service stopped   */
+#custom-presenced.unknown { color: #94e2d5; }   /* teal  — active, no state  */

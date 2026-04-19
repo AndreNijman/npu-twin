@@ -1,0 +1,19 @@
+// presenced — waybar custom-module snippet.
+//
+// Merge the "custom/presenced" block into the "modules-*" array and the
+// top level of your waybar config.jsonc. The script path assumes the
+// repo is cloned at ~/src/npu-twin; adjust as needed.
+//
+// Click behaviours:
+//   left  — toggle presenced.service (start if stopped, stop if running)
+//   right — `journalctl -fu` follow, launched in kitty (edit to taste)
+{
+    "custom/presenced": {
+        "exec": "~/src/npu-twin/project-b/contrib/waybar/presenced.sh",
+        "return-type": "json",
+        "interval": 2,
+        "on-click": "sh -c 'systemctl --user is-active --quiet presenced.service && systemctl --user stop presenced.service || systemctl --user start presenced.service'",
+        "on-click-right": "kitty -e journalctl --user -u presenced.service -f",
+        "tooltip": true
+    }
+}
