@@ -1,0 +1,20 @@
+{"id":1,"class":"code","prompt":"Write a Python function `fibonacci(n)` that returns the nth Fibonacci number using iteration. Include a docstring."}
+{"id":2,"class":"code","prompt":"Write a TypeScript function that debounces a callback by N milliseconds. Type it with generics."}
+{"id":3,"class":"code","prompt":"Write a Rust function `reverse_string(s: &str) -> String` that reverses a UTF-8 string by grapheme clusters."}
+{"id":4,"class":"code","prompt":"Write a SQL query that returns the top 5 customers by total order amount in the last 30 days, from tables `customers(id, name)` and `orders(customer_id, amount, created_at)`."}
+{"id":5,"class":"code","prompt":"Write a Go HTTP handler that returns the current UTC time as JSON. Include the `main` function that registers it on `/time`."}
+{"id":6,"class":"code","prompt":"Write a Bash one-liner that prints the ten largest files under `/var/log` by size."}
+{"id":7,"class":"code","prompt":"Write a C function `strnlen_s(const char *s, size_t n)` that returns min(strlen(s), n). Handle NULL as 0."}
+{"id":8,"class":"code","prompt":"Write a minimal Python `asyncio` TCP echo server on port 9000. No third-party libraries."}
+{"id":9,"class":"reasoning","prompt":"A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How much does the ball cost? Show your reasoning."}
+{"id":10,"class":"reasoning","prompt":"If all Bloops are Razzies, and all Razzies are Lazzies, are all Bloops definitely Lazzies? Answer yes or no with justification."}
+{"id":11,"class":"reasoning","prompt":"I have 12 socks in a drawer: 6 black, 6 white. In the dark, how many must I pull out to guarantee a matching pair? Explain."}
+{"id":12,"class":"reasoning","prompt":"A car travels 60 miles in 1 hour, then 30 miles in half an hour. What is its average speed over the entire trip?"}
+{"id":13,"class":"factual","prompt":"Name the four fundamental forces of physics and order them by relative strength at subatomic scales."}
+{"id":14,"class":"factual","prompt":"What is the capital of New Zealand, and what is the country's largest city by population?"}
+{"id":15,"class":"factual","prompt":"List the seven layers of the OSI model in order from bottom to top."}
+{"id":16,"class":"factual","prompt":"What does the acronym ACID stand for in database theory, and what does each letter mean?"}
+{"id":17,"class":"chat","prompt":"Explain in three sentences what a database index is and when it helps."}
+{"id":18,"class":"chat","prompt":"Give me a one-paragraph summary of what Kubernetes does and when to avoid it."}
+{"id":19,"class":"chat","prompt":"Write a two-sentence apology email to a customer for a delayed shipment."}
+{"id":20,"class":"chat","prompt":"Give me three tips for writing clear git commit messages."}
