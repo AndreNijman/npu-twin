@@ -1,0 +1,21 @@
+== npu-twin demo ==
+repo: /home/andre/src/npu-twin
+
+[1/4] preflight
+  [ok]   preflight clean (see /tmp/npu-twin-demo-preflight.log)
+
+[2/4] --user services
+  [ok]   llama-speculative.service active
+  [ok]   presenced.service active
+
+[3/4] llama-speculative one-shot
+  [ok]   llama-speculative ran
+         encoded   13 tokens in    0.435 seconds, speed:   29.876 t/s
+         decoded   50 tokens in    9.487 seconds, speed:    5.270 t/s
+         n_accept  = 30
+         accept    = 19.737%
+
+[4/4] presenced status
+  [ok]   presenced active, last FSM state: present
+
+== demo PASS ==
