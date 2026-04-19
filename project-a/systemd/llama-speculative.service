@@ -1,6 +1,11 @@
 [Unit]
 Description=llama.cpp speculative server (Vulkan 780M + draft)
 After=graphical-session.target
+# NOTE: production config differs from bench config. Bench uses ctx=4096 and
+# greedy sampling (--temp 0 --seed 42) for reproducibility (see
+# bench/results/20260419T064428Z.json). This server uses ctx=8192 and client-
+# supplied sampling for real chat workloads. Do not compare raw t/s figures
+# between bench JSON and server logs without re-benching at matching config.
 
 [Service]
 Environment=AMD_VULKAN_ICD=RADV
