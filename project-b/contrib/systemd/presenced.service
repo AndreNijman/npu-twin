@@ -7,6 +7,8 @@ PartOf=graphical-session.target
 
 [Service]
 Type=simple
+WorkingDirectory=%h/src/npu-twin/project-b
+Environment=PYTHONPATH=%h/src/npu-twin/project-b
 Environment=PRESENCED_LOG_LEVEL=INFO
 Environment=PRESENCED_FRAME_INTERVAL_S=1.0
 Environment=PRESENCED_GRACE_PERIOD_S=30.0
