@@ -120,6 +120,49 @@ status module that reads FSM state from the journal.
 
 One ASCII diagram + dataflow notes: [`docs/architecture.md`](docs/architecture.md).
 
+## Demo
+
+`scripts/demo.fish` is the smoke gate: preflight, both `--user`
+services active, one short `llama-speculative` prompt, presenced FSM
+state. Captured on the tested ThinkPad L16 Gen 2 for the `v0.1.0`
+release:
+
+<details>
+<summary>bench/results/demo-v0.1.0-20260419T120159Z.txt</summary>
+
+```
+== npu-twin demo ==
+repo: /home/andre/src/npu-twin
+
+[1/4] preflight
+  [ok]   preflight clean (see /tmp/npu-twin-demo-preflight.log)
+
+[2/4] --user services
+  [ok]   llama-speculative.service active
+  [ok]   presenced.service active
+
+[3/4] llama-speculative one-shot
+  [ok]   llama-speculative ran
+         encoded   13 tokens in    0.435 seconds, speed:   29.876 t/s
+         decoded   50 tokens in    9.487 seconds, speed:    5.270 t/s
+         n_accept  = 30
+         accept    = 19.737%
+
+[4/4] presenced status
+  [ok]   presenced active, last FSM state: present
+
+== demo PASS ==
+```
+
+</details>
+
+Two numbers to notice. The 5.27 t/s decode is low for this prompt
+(non-code, non-speculative-friendly) — the Phase 2 bench gives the
+real per-class picture (code: 13.45 t/s). The 19.7 % accept rate is
+also low for a single short prompt; the Phase 2 code-class accept rate
+is materially higher and documented in the benchmarks section and in
+ADR-0003.
+
 ## Benchmarks
 
 - **Phase 2 (Project A alone):** `bench/results/20260419T064428Z.json`
