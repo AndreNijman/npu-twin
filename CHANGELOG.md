@@ -16,8 +16,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Vulkan, group membership, memlock, IOMMU, XRT enumeration, `/dev/video0`.
   `docs/hardware.md` records the tested L16 Gen 2 stack (kernel 6.19.10,
   amdxdna 0.6.0, NPU firmware 1.5.2.380, XRT 2.21.75, Mesa 26.0.4).
+- Phase 2: Project A llama.cpp-vulkan speculative decoding. `llama-speculative`
+  server unit, 20-prompt benchmark suite across 4 classes (code/reasoning/
+  factual/chat), greedy sampling for reproducibility. First run:
+  **code 1.59× / reasoning 1.61× / factual 1.25× / chat 1.08× (overall 1.42×)**
+  — meets ≥1.3× acceptance criterion on code class.
 
 ### Changed
+- `scripts/smoke.fish` and `scripts/bench.fish` migrated off `llama-cli`
+  (conversation-only in b8840) to `llama-completion` (baseline) and
+  `llama-speculative` (speculative).
 
 ### Fixed
 
