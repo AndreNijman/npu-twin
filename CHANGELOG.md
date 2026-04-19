@@ -66,4 +66,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+### Docs
+- Migrated all NPU project notes from the legacy
+  `~/ObsidianVault/NPU Projects/` folder into the shared Claude Memory
+  vault at `~/ObsidianVault/ClaudeMemory/`, matching the conventions
+  already in use there. ADRs 0001/0002/0003 mirrored into
+  `ClaudeMemory/decisions/` (0004/0005/0006 already lived there);
+  two new error notes captured in `ClaudeMemory/errors-and-fixes/`
+  (`xrt-smi-mmap-memlock-eagain`, `render-group-not-in-session`);
+  the project's hardware baseline, Project A/B detail, benchmarks
+  tables, and commit log absorbed into
+  `ClaudeMemory/projects/npu-twin.md`. Legacy folder retained read-only
+  as a backup with an archive banner — no new writes there.
+
 [Unreleased]: https://example.invalid/compare/HEAD
