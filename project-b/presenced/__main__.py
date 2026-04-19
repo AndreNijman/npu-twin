@@ -13,6 +13,7 @@ from .face import build as build_face
 from .fsm import PresenceFSM, State
 from .hypr import HyprBridge
 from .preflight import run as preflight
+from .xdna_probe import deep_probe as xdna_deep_probe
 from .xdna_probe import probe as xdna_probe
 
 log = logging.getLogger("presenced")
@@ -50,9 +51,25 @@ def _install_signals(loop: asyncio.AbstractEventLoop, stop: asyncio.Event) -> No
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="presenced")
     parser.add_argument("--version", action="version", version=__version__)
-    parser.add_argument("--probe-only", action="store_true", help="run XDNA probe and exit")
+    parser.add_argument("--probe-only", action="store_true", help="run XDNA existence probe and exit")
+    parser.add_argument(
+        "--probe-npu",
+        action="store_true",
+        help="run the deep NPU probe: attempt an onnxruntime InferenceSession "
+        "with VitisAIExecutionProvider and report offload status as one JSON "
+        "line on stdout. Exit 0 if NPU active, 2 if CPU fallback, 1 if EP "
+        "unavailable.",
+    )
     parser.add_argument("--dry-run", action="store_true", help="preflight only, do not start loop")
     args = parser.parse_args(argv)
+
+    if args.probe_npu:
+        # Deep probe runs without logging noise so stdout stays a single
+        # clean JSON line consumable by check-npu-status.fish.
+        logging.basicConfig(level=logging.ERROR)
+        result, rc = xdna_deep_probe()
+        print(result.to_json())
+        return rc
 
     cfg = Config.from_env()
     logging.basicConfig(
