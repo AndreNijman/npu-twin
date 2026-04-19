@@ -1,0 +1,20 @@
+[Unit]
+Description=llama.cpp speculative server (Vulkan 780M + draft)
+After=graphical-session.target
+
+[Service]
+Environment=AMD_VULKAN_ICD=RADV
+Environment=LLAMA_ARG_N_GPU_LAYERS=99
+ExecStart=/usr/bin/llama-server \
+  -m %h/src/npu-twin/project-a/models/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf \
+  --device Vulkan0 -ngl 99 -fa on -c 8192 \
+  -md %h/src/npu-twin/project-a/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf \
+  -devd Vulkan0 -ngld 99 \
+  --draft-max 8 --draft-min 2 --draft-p-min 0.6 \
+  --host 127.0.0.1 --port 11434 --alias llama-3.1-8b-spec
+Restart=on-failure
+RestartSec=3
+LimitMEMLOCK=infinity
+
+[Install]
+WantedBy=default.target
