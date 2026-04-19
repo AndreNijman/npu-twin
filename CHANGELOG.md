@@ -8,7 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Repository scaffold.
+- Phase 0.5: Repository bootstrap. Initial commit, gitignore, gitattributes,
+  editorconfig, CHANGELOG skeleton, directory scaffold (`docs/`, `project-a/`,
+  `project-b/`, `bench/`, `scripts/`).
 
 ### Changed
 
