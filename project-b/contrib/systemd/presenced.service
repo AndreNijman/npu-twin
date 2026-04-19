@@ -1,0 +1,18 @@
+[Unit]
+Description=presenced — face/gaze presence daemon (CPU-first, NPU-opportunistic)
+After=graphical-session.target
+PartOf=graphical-session.target
+# NPU offload is intentionally not implemented. See docs/decisions/0002-no-npu-draft.md.
+# This unit runs CPU-only; xdna_probe reports status on startup.
+
+[Service]
+Type=simple
+Environment=PRESENCED_LOG_LEVEL=INFO
+Environment=PRESENCED_FRAME_INTERVAL_S=1.0
+Environment=PRESENCED_GRACE_PERIOD_S=30.0
+ExecStart=/usr/bin/python -m presenced
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target
