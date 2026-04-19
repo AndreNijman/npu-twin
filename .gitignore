@@ -1,0 +1,36 @@
+# models / weights — too big, redistribute via HF/Zenodo
+project-a/models/
+project-b/models/*.onnx
+project-b/models/*.bin
+
+# user data — never commit
+~/.local/share/presenced/
+**/enroll.npy
+**/*.npy
+**/*.embedding
+
+# logs / runtime
+*.log
+runs/
+bench/results/raw/
+
+# venv / build
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.uv/
+
+# editor
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# secrets (paranoia)
+.env
+.env.*
+*.key
+*.pem
