@@ -11,21 +11,21 @@
     "overall": "PASS"
   },
   "baseline_phase2": {
-    "source": "project-a/bench/results/20260419T075411Z.json",
+    "source": "bench/results/20260419T064428Z.json",
     "chat": 9.224,
     "code": 13.450,
     "factual": 10.630,
     "reasoning": 13.713
   },
   "solo": {
-    "source": "project-a/bench/results/20260419T101641Z.json",
+    "source": "bench/results/20260419T101641Z.json",
     "chat": 9.2475,
     "code": 11.9104,
     "factual": 10.6183,
     "reasoning": 13.6805
   },
   "corun": {
-    "source": "project-a/bench/results/20260419T102925Z.json",
+    "source": "bench/results/20260419T102925Z.json",
     "chat": 9.1485,
     "code": 13.3541,
     "factual": 10.5595,
