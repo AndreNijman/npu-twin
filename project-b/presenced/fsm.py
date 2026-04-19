@@ -6,6 +6,7 @@ from enum import Enum
 
 
 class State(str, Enum):
+    UNKNOWN = "unknown"
     PRESENT = "present"
     AWAY_GRACE = "away_grace"
     AWAY = "away"
@@ -21,7 +22,7 @@ class Transition:
 class PresenceFSM:
     def __init__(self, grace_period_s: float, now: float | None = None) -> None:
         self.grace_period_s = grace_period_s
-        self.state = State.PRESENT
+        self.state = State.UNKNOWN
         self.last_seen = now if now is not None else time.monotonic()
         self._grace_started: float | None = None
 
@@ -35,6 +36,11 @@ class PresenceFSM:
                 self.state = State.PRESENT
                 return Transition(prev, self.state, "face detected")
             return None
+
+        if self.state == State.UNKNOWN:
+            self._grace_started = t
+            self.state = State.AWAY_GRACE
+            return Transition(State.UNKNOWN, self.state, "no face seen yet; entering grace")
 
         if self.state == State.PRESENT:
             self._grace_started = t
