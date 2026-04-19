@@ -14,8 +14,13 @@
 #   bench-solo.json     -- copy of the solo bench result
 #   bench-corun.json    -- copy of the corun bench result
 #   trace-<label>/      -- amdgpu_top.json, top.log, meminfo-{start,end}.txt
+#   warmup-<label>/     -- throwaway llama-speculative run to prime caches
 #   journalctl-k.log    -- kernel log covering the full window
-#   presenced*.log      -- presenced stderr/stdout for each run
+#   presenced-*.log     -- journalctl --user -u presenced.service window
+#
+# Requires presenced.service installed in --user scope:
+#   systemctl --user link <repo>/project-b/contrib/systemd/presenced.service
+#   systemctl --user daemon-reload
 #
 # Acceptance (Phase 4):
 #   (a) both services survive each other being killed
@@ -30,7 +35,7 @@ set -g out_dir "$repo_root/bench/results/concurrency-$utc"
 mkdir -p $out_dir
 set -g t_start (date -Iseconds)
 
-for bin in jq amdgpu_top curl top journalctl
+for bin in jq amdgpu_top curl top journalctl systemctl
     if not command -q $bin
         echo "error: missing $bin" >&2
         exit 1
@@ -38,6 +43,12 @@ for bin in jq amdgpu_top curl top journalctl
 end
 if test (systemctl --user is-active llama-speculative.service) != "active"
     echo "error: llama-speculative.service not active; start it first" >&2
+    exit 1
+end
+if not systemctl --user cat presenced.service >/dev/null 2>&1
+    echo "error: presenced.service not installed in --user. Install with:" >&2
+    echo "  systemctl --user link $repo_root/project-b/contrib/systemd/presenced.service" >&2
+    echo "  systemctl --user daemon-reload" >&2
     exit 1
 end
 if not test -e $baseline_file
@@ -52,11 +63,29 @@ if not test -e "$PRESENCED_YUNET_MODEL"
     exit 1
 end
 
-# Neutralise presenced side-effects: no-op actions + guard the hyprctl
-# dispatch by unsetting HYPRLAND_INSTANCE_SIGNATURE for the subshell.
-set -gx PRESENCED_AWAY_ACTION true
-set -gx PRESENCED_PRESENT_ACTION true
-set -e HYPRLAND_INSTANCE_SIGNATURE
+# Neutralise presenced side-effects for the harness run: no-op actions +
+# drop the Hyprland signature so the hyprctl bridge self-disables. These
+# env vars are pushed to the user-manager scope so they reach the
+# presenced.service unit; restored to their prior values at exit.
+set -l env_restore_aa
+set -l env_restore_pa
+set -l env_restore_hy
+set -q PRESENCED_AWAY_ACTION;    and set env_restore_aa $PRESENCED_AWAY_ACTION
+set -q PRESENCED_PRESENT_ACTION; and set env_restore_pa $PRESENCED_PRESENT_ACTION
+set -q HYPRLAND_INSTANCE_SIGNATURE; and set env_restore_hy $HYPRLAND_INSTANCE_SIGNATURE
+systemctl --user set-environment \
+    PRESENCED_AWAY_ACTION=true \
+    PRESENCED_PRESENT_ACTION=true \
+    PRESENCED_YUNET_MODEL=$PRESENCED_YUNET_MODEL
+systemctl --user unset-environment HYPRLAND_INSTANCE_SIGNATURE
+
+function restore_env --on-event fish_exit
+    systemctl --user unset-environment \
+        PRESENCED_AWAY_ACTION PRESENCED_PRESENT_ACTION PRESENCED_YUNET_MODEL 2>/dev/null
+    test -n "$env_restore_aa"; and systemctl --user set-environment PRESENCED_AWAY_ACTION=$env_restore_aa
+    test -n "$env_restore_pa"; and systemctl --user set-environment PRESENCED_PRESENT_ACTION=$env_restore_pa
+    test -n "$env_restore_hy"; and systemctl --user set-environment HYPRLAND_INSTANCE_SIGNATURE=$env_restore_hy
+end
 
 function start_trace --argument label
     set -l tdir "$out_dir/trace-$label"
@@ -114,48 +143,45 @@ echo "out: $out_dir"
 echo
 
 # --- 1. solo run (presenced OFF) ---
-pkill -f "python -m presenced" 2>/dev/null
+systemctl --user stop presenced.service 2>/dev/null
 sleep 1
 run_bench solo
 
 # --- 2. corun (presenced ON) ---
-python -m presenced > "$out_dir/presenced-corun.log" 2>&1 &
-set -g presenced_pid $last_pid
+systemctl --user start presenced.service
 sleep 3
-if not kill -0 $presenced_pid 2>/dev/null
-    echo "error: presenced died immediately; see $out_dir/presenced-corun.log" >&2
+if test (systemctl --user is-active presenced.service) != "active"
+    journalctl --user -u presenced.service -n 50 --no-pager > "$out_dir/presenced-corun.log"
+    echo "error: presenced.service failed to start; see $out_dir/presenced-corun.log" >&2
     exit 1
 end
 run_bench corun
-kill $presenced_pid 2>/dev/null
-wait $presenced_pid 2>/dev/null
+journalctl --user -u presenced.service -S "$t_start" --no-pager > "$out_dir/presenced-corun.log"
+systemctl --user stop presenced.service
 
 # --- 3. survival test ---
 echo ">>> survival test"
-python -m presenced > "$out_dir/presenced-survive.log" 2>&1 &
-set -g p_pid $last_pid
+systemctl --user start presenced.service
 sleep 3
 set -l llama_before (curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:11434/health)
-kill $p_pid 2>/dev/null
-wait $p_pid 2>/dev/null
+systemctl --user stop presenced.service
 sleep 2
 set -l llama_after_p_kill (curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:11434/health)
 
 # Restart presenced, then stop/restart llama-speculative
-python -m presenced > "$out_dir/presenced-survive2.log" 2>&1 &
-set -g p_pid2 $last_pid
+systemctl --user start presenced.service
 sleep 3
-set -l p_alive_pre 1
-kill -0 $p_pid2 2>/dev/null; and set p_alive_pre 1; or set p_alive_pre 0
+set -l p_alive_pre 0
+test (systemctl --user is-active presenced.service) = "active"; and set p_alive_pre 1
 systemctl --user stop llama-speculative.service
 sleep 3
 set -l p_alive_post 0
-kill -0 $p_pid2 2>/dev/null; and set p_alive_post 1; or set p_alive_post 0
+test (systemctl --user is-active presenced.service) = "active"; and set p_alive_post 1
 systemctl --user start llama-speculative.service
 sleep 5
 set -l llama_restarted (curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:11434/health)
-kill $p_pid2 2>/dev/null
-wait $p_pid2 2>/dev/null
+journalctl --user -u presenced.service -S "$t_start" --no-pager > "$out_dir/presenced-survive.log"
+systemctl --user stop presenced.service
 
 # --- 4. kernel log + dmesg window ---
 journalctl -k -S "$t_start" > "$out_dir/journalctl-k.log" 2>&1
