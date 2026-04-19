@@ -12,6 +12,10 @@ Environment=PYTHONPATH=%h/src/npu-twin/project-b
 Environment=PRESENCED_LOG_LEVEL=INFO
 Environment=PRESENCED_FRAME_INTERVAL_S=1.0
 Environment=PRESENCED_GRACE_PERIOD_S=30.0
+# Default model location assumes project-b/scripts/fetch-yunet.sh has been
+# run. Override via `systemctl --user edit presenced.service` if you keep
+# the model elsewhere.
+Environment=PRESENCED_YUNET_MODEL=%h/src/npu-twin/project-b/models/yunet/face_detection_yunet_2023mar_int8.onnx
 ExecStart=/usr/bin/python -m presenced
 Restart=on-failure
 RestartSec=5

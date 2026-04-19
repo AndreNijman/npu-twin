@@ -25,11 +25,18 @@ echo "repo: $repo_root"
 echo
 
 # --- 1. preflight ---
+# preflight.fish: exit 0 = pass, 1 = hard fail, 2 = warn-only (relog
+# pending). Treat warn as non-fatal for the demo gate.
 echo "[1/4] preflight"
-if fish "$repo_root/scripts/preflight.fish" > /tmp/npu-twin-demo-preflight.log 2>&1
-    ok "preflight clean (see /tmp/npu-twin-demo-preflight.log)"
-else
-    bad "preflight failed — see /tmp/npu-twin-demo-preflight.log"
+fish "$repo_root/scripts/preflight.fish" > /tmp/npu-twin-demo-preflight.log 2>&1
+set -l pf_rc $status
+switch $pf_rc
+    case 0
+        ok "preflight clean (see /tmp/npu-twin-demo-preflight.log)"
+    case 2
+        warn "preflight warn-only (rc=2, see /tmp/npu-twin-demo-preflight.log)"
+    case '*'
+        bad "preflight failed rc=$pf_rc — see /tmp/npu-twin-demo-preflight.log"
 end
 echo
 
@@ -76,8 +83,10 @@ echo
 # --- 4. presenced status ---
 echo "[4/4] presenced status"
 if test (systemctl --user is-active presenced.service 2>/dev/null) = "active"
+    # Escape the leading '-' in the pattern so fish does not try to treat
+    # '-> ...' as a flag to grep.
     set -l last (journalctl --user -u presenced.service -n 200 --no-pager -o cat 2>/dev/null \
-        | grep -oE '-> (present|away_grace|away)' | tail -1 | awk '{print $2}')
+        | grep -oE '\-> (present|away_grace|away)' | tail -1 | awk '{print $2}')
     if test -z "$last"
         warn "presenced active, no FSM transitions yet (camera may be warming up)"
     else
