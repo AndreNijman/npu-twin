@@ -83,7 +83,7 @@ function run_bench --argument label
     start_trace $label
     fish "$repo_root/project-a/scripts/bench.fish" > "$out_dir/bench-$label.stdout" 2>&1
     set -l rc $status
-    set -l latest (ls -t $repo_root/bench/results/*.json | head -1)
+    set -l latest (command ls -t $repo_root/bench/results/*.json | head -1)
     cp $latest "$out_dir/bench-$label.json"
     wait_trace $label
     echo "<<< bench ($label) done rc=$rc, copied $latest -> bench-$label.json"
@@ -159,9 +159,8 @@ jq -n \
     --argjson oom_hits "$oom_hits" \
     --argjson throttle_hits "$throttle_hits" \
     '
-      def cls(grp):
-        grp
-        | group_by(.class)
+      def cls:
+        group_by(.class)
         | map({
             class:.[0].class,
             n:length,
