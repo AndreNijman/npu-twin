@@ -21,6 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   factual/chat), greedy sampling for reproducibility. First run:
   **code 1.59× / reasoning 1.61× / factual 1.25× / chat 1.08× (overall 1.42×)**
   — meets ≥1.3× acceptance criterion on code class.
+- Phase 3: Project B presence daemon skeleton (`project-b/presenced/`).
+  Asyncio entrypoint, present/away_grace/away FSM with configurable grace
+  period, OpenCV Haar face detector (CPU-only), Hyprland CLI bridge
+  (`hyprctl dispatch`), XDNA 1 opportunistic probe (status-only, no
+  offload per ADR-0002), video-group + camera-node preflight. Systemd
+  user unit at `project-b/contrib/systemd/presenced.service`. 6 pytest
+  cases green (FSM transitions + probe verdicts).
 
 ### Changed
 - `scripts/smoke.fish` and `scripts/bench.fish` migrated off `llama-cli`
