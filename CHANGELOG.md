@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Removed
+
+### Fixed
+
+### Docs
+
+## [0.1.0] - 2026-04-19
+
+First working twin-project build on the ThinkPad L16 Gen 2.
+
+### Added
 - Phase 0.5: Repository bootstrap. Initial commit, gitignore, gitattributes,
   editorconfig, CHANGELOG skeleton, directory scaffold (`docs/`, `project-a/`,
   `project-b/`, `bench/`, `scripts/`).
@@ -95,6 +109,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     logged `verdict: onnxruntime-unavailable` (honest — no
     `python-onnxruntime` on the host today). The deliverable is the
     mechanism, not the verdict.
+- Phase 7: v0.1.0 release.
+  - `bench/results/acceptance-v0.1.0.md` — seven-gate acceptance
+    matrix (baseline decode, speculative code, away FSM, concurrency,
+    survival, XDNA probe mechanism, demo rc=0) and a four-row
+    "deliberately skipped (opt-in, flag off)" table for gaze-focus /
+    DND / brightness / unlock, called out as not-implemented rather
+    than silently dropped.
+  - `bench/results/demo-v0.1.0-20260419T120159Z.txt` — captured
+    `scripts/demo.fish` output for the release.
+  - README "Demo" section inlining that capture inside a
+    `<details>` block, plus a short honesty note on the single-prompt
+    accept rate and the per-class picture.
 
 ### Changed
 - `scripts/smoke.fish` and `scripts/bench.fish` migrated off `llama-cli`
@@ -127,4 +153,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ClaudeMemory/projects/npu-twin.md`. Legacy folder retained read-only
   as a backup with an archive banner — no new writes there.
 
-[Unreleased]: https://example.invalid/compare/HEAD
+[Unreleased]: https://example.invalid/compare/v0.1.0...HEAD
+[0.1.0]: https://example.invalid/releases/tag/v0.1.0
