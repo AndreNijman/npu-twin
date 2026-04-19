@@ -19,7 +19,7 @@ log = logging.getLogger("presenced")
 
 
 async def _loop(cfg: Config, stop: asyncio.Event) -> int:
-    detector = build_face(cfg.face_backend, cfg.camera_index)
+    detector = build_face(cfg.detector, cfg.camera_index)
     hypr = HyprBridge()
     fsm = PresenceFSM(grace_period_s=cfg.grace_period_s)
     log.info("entered main loop (state=%s, grace=%.1fs)", fsm.state.value, cfg.grace_period_s)

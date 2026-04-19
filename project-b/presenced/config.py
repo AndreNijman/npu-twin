@@ -12,7 +12,7 @@ class Config:
     grace_period_s: float = 30.0
     away_action: str = "dpms off"
     present_action: str = "dpms on"
-    face_backend: str = "opencv-haar"
+    detector: str = "haar"
     gaze_enabled: bool = False
     log_level: str = "INFO"
     xdna_device: Path = field(default_factory=lambda: Path("/dev/accel/accel0"))
@@ -42,7 +42,7 @@ class Config:
             grace_period_s=f("PRESENCED_GRACE_PERIOD_S", 30.0),
             away_action=s("PRESENCED_AWAY_ACTION", "dpms off"),
             present_action=s("PRESENCED_PRESENT_ACTION", "dpms on"),
-            face_backend=s("PRESENCED_FACE_BACKEND", "opencv-haar"),
+            detector=s("PRESENCED_DETECTOR", "haar"),
             gaze_enabled=b("PRESENCED_GAZE_ENABLED", False),
             log_level=s("PRESENCED_LOG_LEVEL", "INFO"),
             xdna_device=Path(s("PRESENCED_XDNA_DEVICE", "/dev/accel/accel0")),

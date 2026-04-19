@@ -152,6 +152,10 @@ class YuNet:
 
 
 def build(backend: str, camera_index: int) -> FaceDetector:
-    if backend == "opencv-haar":
+    if backend == "haar":
         return OpenCVHaar(camera_index=camera_index)
-    raise ValueError(f"unknown face backend: {backend!r}")
+    if backend == "yunet":
+        return YuNet(camera_index=camera_index)
+    raise ValueError(
+        f"unknown detector backend: {backend!r} (expected 'yunet' or 'haar')"
+    )
