@@ -36,6 +36,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   models from OpenCV Zoo; `project-b/scripts/measure-latency.py`
   reproduces the p50/p95 numbers. `project-b/README.md` documents
   the camera-pipeline CPU baseline.
+- Phase 4: concurrency harness (`bench/scripts/concurrency-run.fish`)
+  runs the 20-prompt speculative bench twice — solo and corun with
+  `presenced` polling the UVC webcam — captures `amdgpu_top -J`
+  traces, `top -b` CPU samples, `/proc/meminfo` snapshots,
+  `journalctl -k` windows, and a survival probe (kill `presenced`
+  with llama up; stop llama with `presenced` up). Emits
+  `bench/results/concurrency-<UTC>/verdict.json`. First run on
+  ThinkPad L16 Gen 2: **max corun regression 0.82 % vs Phase 2
+  baseline** (chat 0.82 / code 0.71 / factual 0.66 / reasoning
+  0.70), both survival probes green, 0 OOM / 0 thermal throttle
+  events — **Phase 4 acceptance gate passed**.
 
 ### Changed
 - `scripts/smoke.fish` and `scripts/bench.fish` migrated off `llama-cli`
