@@ -1,0 +1,11 @@
+[Unit]
+Description=npu-twin weekly XDNA 1 status probe
+# Non-critical. Writes one entry to the vault log per fire. See
+# docs/architecture.md and ADR-0002 for why this exists.
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/src/npu-twin
+ExecStart=/usr/bin/fish %h/src/npu-twin/scripts/check-npu-status.fish
+Nice=10
+IOSchedulingClass=idle
