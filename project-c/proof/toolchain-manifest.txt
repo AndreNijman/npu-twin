@@ -6,3 +6,6 @@ XRT:
 mlir_aie: 1.3.3.dev8+g0d49a88
 llvm-aie (Peano): 21.0.0.2026061601+dc0ebf29
 python: 3.14 (venv ironenv314)
+
+# M2 (2026-06-16): single-core matmul 512x512x512 i16->i32, Peano, 32x32x32 tiles
+#   NPU ~2912 us, 92.19 GFLOPS, verified vs numpy (PASS). #2793 did not bite this config.

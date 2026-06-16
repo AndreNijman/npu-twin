@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`env/aie-env.sh`, `run/run-m1.sh`), proof artifacts (run log, AIE2
   disassembly, `xrt-smi` enumeration, toolchain manifest), and full Void bring-up
   runbook (`INSTALL.md`).
+- Phase 8 **M2**: single-core `matmul` (512×512×512 `i16→i32`, Peano, 32×32×32
+  tiles) runs on the NPU at **92.2 GFLOPS** (NPU ~2.91 ms), output verified
+  against a numpy reference — Peano GEMM bug #2793 did not affect this config.
+  `run/run-m2.sh` + proof (`m2-matmul-run.txt`; `m2-kernel-aie2.disasm` shows the
+  `vmac` accumulation loop on AIE2).
 - `xdna_probe.probe()`: new `npu-active-open-stack` verdict + `iron_runtime_importable`
   field — reports the open stack can drive the NPU (`pyxrt` + `xrt-smi` + device).
 

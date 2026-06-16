@@ -27,6 +27,12 @@ PASS!
 - `NPU time` is a hardware timestamp from the runtime, distinct from the Python
   end-to-end wall-clock — the work happened on the engine.
 
+**M2 (2026-06-16):** a single-core `matmul` (512×512×512, `i16→i32`, Peano,
+32×32×32 tiles) then ran at **92.2 GFLOPS** (NPU ~2.91 ms), output **verified
+against numpy** (`assert_close_with_benchmark`) — a real `vmac` (vector
+multiply-accumulate) loop on the AIE2 engine, not a passthrough.
+`sg render -c 'bash run/run-m2.sh'`.
+
 Proof artifacts are in [`proof/`](proof/):
 
 | File | What it shows |
@@ -35,6 +41,8 @@ Proof artifacts are in [`proof/`](proof/):
 | `m1-kernel-aie2.disasm` | the kernel object is `ELF … Machine: EM_AIE (0x108)`, disassembling to **AIE2 VLIW** (`vldb/vlda/vst wh*`, `nopb;nopa;nops` bundles) — not x86 |
 | `xrt-smi-examine.txt` | XRT enumerates `[0000:c6:00.1] RyzenAI-npu1  aie2  6x5` |
 | `toolchain-manifest.txt` | exact versions used |
+| `m2-matmul-run.txt` | M2 matmul `PASS!` + 92.2 GFLOPS, numpy-verified |
+| `m2-kernel-aie2.disasm` | the matmul microkernel = a `vmac` accumulation loop on AIE2 |
 
 ## The stack
 
@@ -67,7 +75,8 @@ sg render -c 'bash project-c/run/run-m1.sh'   # render group needed for /dev/acc
 
 ## Scope (honest)
 
-M1 is a *passthrough* — it proves the toolchain + device round-trip, not a tuned
-kernel. The ladder (see `docs/decisions/0008-passthrough-m1-poc.md`): **M2** =
-single-core `matmul`, **M3** = standalone int8 `conv2d`. YuNet stays on CPU; a
-full model on the NPU is explicitly out of scope.
+M1 is a *passthrough* (toolchain + round-trip proof); **M2 is a real tuned
+kernel** — a single-core `matmul` at ~92 GFLOPS, CPU-verified. The ladder (see
+`docs/decisions/0008-passthrough-m1-poc.md`): M1 ✅, M2 ✅, **M3** = standalone
+int8 `conv2d` (next), M4 = whole-array matmul. YuNet stays on CPU; a full model
+on the NPU is explicitly out of scope.

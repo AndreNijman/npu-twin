@@ -55,7 +55,7 @@ Full stack table in [`docs/hardware.md`](docs/hardware.md).
 | 5   | Hyprland wiring + README + daily-driver polish | ✅ |
 | 6   | Opportunistic XDNA 1 probe + honest gap writeup | ✅ |
 | 7   | Demo + `v0.1.0` | ✅ |
-| 8   | Project C: kernel on the XDNA 1 NPU via open mlir-aie/Peano (M1) | ✅ |
+| 8   | Project C: open mlir-aie/Peano on the XDNA 1 NPU — M1 passthrough + M2 matmul (92 GFLOPS, CPU-verified) | ✅ |
 
 ## Install
 

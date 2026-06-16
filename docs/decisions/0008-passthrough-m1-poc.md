@@ -18,8 +18,8 @@ ladder for project-c:
 | M | Target | Status |
 |---|--------|--------|
 | **M1** | passthrough_kernel runs on the NPU (`PASS!`) | ✅ done 2026-06-16 |
-| **M2** | single-core `matmul` running + measured | next |
-| **M3** | standalone int8 `conv2d` on one tile, vs CPU reference | stretch |
+| **M2** | single-core `matmul` running + measured + CPU-verified | ✅ done 2026-06-16 |
+| **M3** | standalone int8 `conv2d` on one tile, vs CPU reference | next |
 | M4 | whole-array (16-core) matmul | stretch |
 
 ## Reasoning
@@ -48,4 +48,10 @@ ladder for project-c:
   Honest framing in `project-c/README.md`.
 - Reproducible via `project-c/run/run-m1.sh`; proof artifacts under
   `project-c/proof/` (run log, AIE2 disassembly, xrt-smi enumeration, manifest).
-- Next session starts at M2 against `basic/matrix_multiplication/single_core`.
+- **M2 result (2026-06-16):** `single_core` matmul 512×512×512 `i16→i32` (Peano,
+  32×32×32 tiles) ran at **92.2 GFLOPS** (NPU ~2.91 ms), output **verified against
+  a numpy reference** (`assert_close_with_benchmark`) — the Peano GEMM bug #2793
+  did *not* affect this config. The microkernel is a `vmac` (vector
+  multiply-accumulate) loop on the AIE2 engine (`project-c/proof/m2-*`).
+  Reproduce: `sg render -c 'bash project-c/run/run-m2.sh'`.
+- Next: M3 (standalone int8 `conv2d`) against the AIE-vectorization conv2d example.
