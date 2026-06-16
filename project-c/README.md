@@ -59,6 +59,8 @@ Proof artifacts are in [`proof/`](proof/):
 | `m3-kernel-aie2.disasm` | the int8 conv microkernel = `vmac`/`mul` + `srs` (requant) on AIE2 |
 | `m4-whole-array-run.txt` | M4 16-core matmul `PASS!` + 891.5 GFLOPS, numpy-verified |
 | `m4-partition.txt` | the 16 distinct compute-tile objects + AIE partition |
+| `stretch-int8-matmul.txt` | int8 matmul: 148 GFLOPS single-core, 979 GFLOPS 16-core |
+| `stretch-conv-relu.txt` | int8 conv2d with fused ReLU (uint8), torch-verified |
 
 ## The stack
 
@@ -88,6 +90,27 @@ sg render -c 'bash project-c/run/run-m1.sh'   # render group needed for /dev/acc
 - in-tree `amdxdna` driver + firmware **`npu.sbin.1.5.5.391`** (protocol 7) — loads clean, no DKMS
 - XRT **2.25.0** built from `amd/xdna-driver` (userspace only, `-nokmod`)
 - `mlir_aie` **1.3.3.dev8+g0d49a88**, `llvm-aie` (Peano) **21.0.0.2026061601**, Python **3.14**
+
+## Beyond the ladder (stretch)
+
+Extra runs once M1–M4 worked (proof in [`proof/`](proof/)):
+
+- **int8 matmul** — AIE2's peak-density datatype (256 MAC/cycle), numpy-verified.
+  Peano bugs #2793 (matmul) / #2388 (i8 whole_array) did not bite these configs.
+  `run/run-m2.sh --dtype_in i8 --dtype_out i32` and `run/run-m4.sh --dtype_in i8 --dtype_out i32`.
+
+  | datatype | single-core | whole-array (16 tiles) |
+  |----------|------------:|-----------------------:|
+  | i16      | ~92 GFLOPS  | ~892 GFLOPS |
+  | i8       | ~148 GFLOPS | ~979 GFLOPS |
+
+- **Fused conv2d + ReLU** (`run/run-m3.sh fuse_relu=1`) — the 1×1 int8 conv with
+  ReLU fused via unsigned-int8 saturation (uint8 output), verified against a
+  PyTorch golden model that includes `nn.ReLU`. ~0.53 ms.
+- **`scripts/check-npu-status.fish` repaired** — it was writing to the dead
+  `~/ObsidianVault/...` path (gone post Arch→Void); now appends to repo-local
+  [`npu-status-log.md`](npu-status-log.md), drives the open-stack `xrt-smi`, and
+  records `npu-active-open-stack` via `xdna_probe.probe()`.
 
 ## Scope (honest)
 

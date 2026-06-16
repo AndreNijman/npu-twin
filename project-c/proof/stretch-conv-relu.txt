@@ -1,0 +1,7 @@
+# Stretch: 1x1 int8 conv2d with FUSED ReLU (uint8 out) on the XDNA1 NPU
+# fuse_relu=1 -> kernels.conv2dk1; the unsigned int8 (uint8) saturation IS the ReLU.
+# Verified against a PyTorch golden model that includes nn.ReLU + uint8 clamp.
+
+Avg NPU time: 530us.
+PASS!
+CONV_RELU_RC=0

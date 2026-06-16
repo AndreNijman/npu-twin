@@ -30,6 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (NPU ~0.30 ms, ~9.7× single-core M2), numpy-verified — mlir-aie #1515
   (npu1_4col) did not bite this version. `run/run-m4.sh` + proof
   (`m4-whole-array-run.txt`, `m4-partition.txt`). **The M1–M4 ladder is complete.**
+- Phase 8 stretch: **int8 matmul** (148 GFLOPS single-core / 979 GFLOPS 16-core,
+  numpy-verified — Peano #2793/#2388 did not bite) and **fused int8 conv2d + ReLU**
+  (uint8 out, torch-verified). Proof `stretch-int8-matmul.txt`, `stretch-conv-relu.txt`.
 - `xdna_probe.probe()`: new `npu-active-open-stack` verdict + `iron_runtime_importable`
   field — reports the open stack can drive the NPU (`pyxrt` + `xrt-smi` + device).
 
@@ -41,6 +44,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Fixed
+- `scripts/check-npu-status.fish`: wrote to the dead
+  `~/ObsidianVault/ClaudeMemory/...` path (gone after the Arch→Void migration) and
+  shelled out to a bare `xrt-smi`. Now appends to repo-local
+  `project-c/npu-status-log.md`, uses the open-stack `xrt-smi` under `/opt/xilinx/xrt`,
+  and records the open-stack verdict (`npu-active-open-stack`) via
+  `xdna_probe.probe()` + `project-c/npu_probe_verdict.py`.
 
 ### Docs
 - ADR-0007 (mlir-aie/IRON/Peano over VitisAI for XDNA 1), ADR-0008

@@ -1,0 +1,16 @@
+# Stretch: int8 matmul GFLOPS on the XDNA1 NPU (Peano, numpy-verified)
+# int8 = AIE2 peak-density datatype (256 MAC/cycle). #2793 (matmul) / #2388 (i8 whole_array) did NOT bite.
+
+## single-core  (512x512x512, i8->i32, 32x32x32 tiles):
+NPU time     (avg/min/max us): 1809.7 / 1798.0 / 1830.6
+NPU GFLOPS                    : 148.33
+PASS!
+
+## whole-array  (512x512x512, i8->i32, 4x4 = 16 tiles):
+NPU time     (avg/min/max us): 274.3 / 259.3 / 306.8
+NPU GFLOPS                    : 978.63
+PASS!
+
+## comparison (this session):
+  i16 single-core (M2): ~92 GFLOPS   | i16 whole-array (M4): ~892 GFLOPS
+  i8  single-core     : ~148 GFLOPS  | i8  whole-array     : ~979 GFLOPS
