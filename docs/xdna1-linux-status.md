@@ -42,8 +42,8 @@ where community tooling expects the ecosystem to stabilise.
 
 ## When this page is out of date
 
-- If `bench/scripts/check-npu-status.fish` or its timer emits a verdict
-  other than `onnxruntime-unavailable`, revisit this list.
+- If `scripts/check-npu-status.fish` emits a verdict other than
+  `onnxruntime-unavailable`, revisit this list.
 - If `docs/decisions/0002-no-npu-draft.md` (ADR-0002) gets superseded,
   update both docs together.
 

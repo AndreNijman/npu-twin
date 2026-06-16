@@ -42,6 +42,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   target. README narrative + status matrix updated (Phase 8 row).
 
 ### Removed
+- `project-b/contrib/systemd/npu-status.{service,timer}` — the weekly NPU-status
+  systemd units. They never fired on this Void/runit box, and the probe's purpose
+  (detecting *when* the NPU became usable) is moot now that it is.
+  `scripts/check-npu-status.fish` stays, runnable by hand.
 
 ### Fixed
 - `scripts/check-npu-status.fish`: wrote to the dead

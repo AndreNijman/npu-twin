@@ -10,7 +10,8 @@
 # the open IRON/mlir-aie/Peano stack drives the NPU, so the verdict reads
 # `npu-active-open-stack` when the toolchain (XRT + pyxrt) is on PATH/PYTHONPATH.
 #
-# Fired weekly by project-b/contrib/systemd/npu-status.timer. Safe to run by hand.
+# Run by hand, or wire into your own scheduler. (The systemd npu-status.timer was
+# removed — it never fired on this Void/runit box and the NPU is usable now.)
 # The xrt-smi device query needs the caller in the `render` group (else run via
 # `sg render -c '...'`). The probe verdict needs the Phase-8 env sourced — point
 # AIE_ENV at it (default ~/src/mlir-aie/aie-env314.sh).
