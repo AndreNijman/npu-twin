@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Peano) runs on one AIE core (~0.55 ms) and verifies against a PyTorch golden
   model — the int8 ML kernel relevant to YuNet's quantization. `run/run-m3.sh`
   + proof (`m3-conv2d-run.txt`, `m3-kernel-aie2.disasm`). Needs `torch` (CPU).
+- Phase 8 **M4**: whole-array matmul across the full **4×4 = 16-tile** Phoenix
+  array (`whole_array`, 512×512×512 `i16`, npu1_4col, Peano) at **891.5 GFLOPS**
+  (NPU ~0.30 ms, ~9.7× single-core M2), numpy-verified — mlir-aie #1515
+  (npu1_4col) did not bite this version. `run/run-m4.sh` + proof
+  (`m4-whole-array-run.txt`, `m4-partition.txt`). **The M1–M4 ladder is complete.**
 - `xdna_probe.probe()`: new `npu-active-open-stack` verdict + `iron_runtime_importable`
   field — reports the open stack can drive the NPU (`pyxrt` + `xrt-smi` + device).
 

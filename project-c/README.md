@@ -39,6 +39,12 @@ against a PyTorch golden model**. int8 is AIE2's peak-density datatype
 (256 MAC/cycle) and matches YuNet's quantization — this is the npu-twin-relevant
 ML kernel. `sg render -c 'bash run/run-m3.sh'` (needs `torch` CPU in the venv).
 
+**M4 (2026-06-16):** the same matmul spread across the **full 4×4 = 16-tile
+Phoenix array** (`whole_array`, 512³ `i16`, Peano) ran at **891.5 GFLOPS** (NPU
+~0.30 ms) — **~9.7× the single-core M2** — numpy-verified. 16 distinct
+per-tile core objects (`core_{0..3}_{2..5}`) confirm whole-array placement; the
+npu1_4col verify mismatch (mlir-aie #1515) did not bite. `sg render -c 'bash run/run-m4.sh'`.
+
 Proof artifacts are in [`proof/`](proof/):
 
 | File | What it shows |
@@ -51,6 +57,8 @@ Proof artifacts are in [`proof/`](proof/):
 | `m2-kernel-aie2.disasm` | the matmul microkernel = a `vmac` accumulation loop on AIE2 |
 | `m3-conv2d-run.txt` | M3 int8 conv2d `PASS!` vs a PyTorch golden model |
 | `m3-kernel-aie2.disasm` | the int8 conv microkernel = `vmac`/`mul` + `srs` (requant) on AIE2 |
+| `m4-whole-array-run.txt` | M4 16-core matmul `PASS!` + 891.5 GFLOPS, numpy-verified |
+| `m4-partition.txt` | the 16 distinct compute-tile objects + AIE partition |
 
 ## The stack
 
@@ -84,7 +92,8 @@ sg render -c 'bash project-c/run/run-m1.sh'   # render group needed for /dev/acc
 ## Scope (honest)
 
 M1 is a *passthrough* (toolchain + round-trip proof); **M2 is a real tuned
-kernel** and **M3 an int8 conv2d** — both CPU-verified. The ladder (see
-`docs/decisions/0008-passthrough-m1-poc.md`): M1 ✅, M2 ✅, M3 ✅,
-**M4** = whole-array (multi-tile) matmul (next). YuNet stays on CPU; a full model
-on the NPU is explicitly out of scope.
+kernel**, **M3 an int8 conv2d**, and **M4 the whole 16-tile array** (~892
+GFLOPS) — all CPU-verified. The ladder (see
+`docs/decisions/0008-passthrough-m1-poc.md`) is **complete: M1 ✅ M2 ✅ M3 ✅
+M4 ✅** — the open stack scales from one tile to the full Phoenix array. YuNet
+stays on CPU; a full model on the NPU is explicitly out of scope.

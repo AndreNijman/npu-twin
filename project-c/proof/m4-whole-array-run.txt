@@ -1,0 +1,12 @@
+=== xrt-smi device ===
+Device(s) Present
+|BDF             |Name          |Architecture  |Topology  |
+|----------------|--------------|--------------|----------|
+=== whole-array matmul on the NPU (JIT-compiles first time) ===
+
+NPU time     (avg/min/max us): 301.1 / 290.2 / 320.5
+End-to-end   (avg/min/max us): 494.2 / 448.7 / 563.7
+NPU GFLOPS                    : 891.52
+PASS!
+RUN_RC=0
+M4_WRAPPER_DONE

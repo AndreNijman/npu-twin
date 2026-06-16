@@ -1,0 +1,8 @@
+# M4 whole-array matmul — final.xclbin
+# 512x512x512 i16->i16, n_aie_cols=4 x n_aie_rows=4, Peano (no Vitis), numpy-verified.
+# 891.52 GFLOPS on the array vs ~92 GFLOPS single-core (M2) -> ~9.7x from 16 tiles.
+
+## xclbin sections: MEM_TOPOLOGY, AIE_PARTITION, EMBEDDED_METADATA, 
+
+## 16 distinct AIE compute-tile objects (one per active tile, col_row):
+main_core_0_2.o main_core_0_3.o main_core_0_4.o main_core_0_5.o main_core_1_2.o main_core_1_3.o main_core_1_4.o main_core_1_5.o main_core_2_2.o main_core_2_3.o main_core_2_4.o main_core_2_5.o main_core_3_2.o main_core_3_3.o main_core_3_4.o main_core_3_5.o

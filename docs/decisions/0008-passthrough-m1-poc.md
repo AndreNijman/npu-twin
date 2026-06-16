@@ -20,7 +20,7 @@ ladder for project-c:
 | **M1** | passthrough_kernel runs on the NPU (`PASS!`) | ✅ done 2026-06-16 |
 | **M2** | single-core `matmul` running + measured + CPU-verified | ✅ done 2026-06-16 |
 | **M3** | standalone int8 `conv2d` on one tile, vs CPU reference | ✅ done 2026-06-16 |
-| M4 | whole-array (16-core) matmul | next (stretch) |
+| M4 | whole-array (16-core) matmul | ✅ done 2026-06-16 |
 
 ## Reasoning
 
@@ -63,4 +63,10 @@ ladder for project-c:
   `sg render -c 'bash project-c/run/run-m3.sh'`. NB the shipped example is the
   **1×1** (pointwise/channel-mixing) case, not 3×3 — the 3×3 shape in the Phase-8
   scoping was illustrative; 1×1 int8 satisfies "standalone int8 conv2d, CPU-verified".
-- Next: M4 (whole-array matmul) — single-core M2/M3 use 1 of the 6×5 tiles.
+- **M4 result (2026-06-16):** `whole_array` matmul 512×512×512 `i16` across the
+  full **4×4 = 16 compute tiles** (npu1_4col) ran at **891.5 GFLOPS** (NPU
+  ~0.30 ms) — **~9.7× the single-core M2** (92 GFLOPS) — output verified against
+  numpy. mlir-aie #1515 (npu1_4col verify mismatch) did **not** bite this version.
+  Proof `project-c/proof/m4-*` (16 distinct `core_{0..3}_{2..5}.o` tiles);
+  reproduce `sg render -c 'bash project-c/run/run-m4.sh'`. **The M1–M4 ladder is
+  complete** — the open stack scales from one tile to the whole Phoenix array.
