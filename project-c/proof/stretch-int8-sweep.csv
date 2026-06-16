@@ -1,0 +1,15 @@
+# int8 matmul GFLOPS sweep — XDNA1 Phoenix, whole-array (4x4 = 16 tiles, npu1_4col),
+# i8 in / i32 out, 64x64x32 tiles, Peano, IRON @iron.jit, numpy-verified each point.
+# Reproduce: sg render -c 'bash project-c/run/sweep-int8.sh'
+#
+# Finding: int8 throughput peaks ~2.0 TFLOPS at 1024^3, then declines with size —
+# bandwidth-bound (single-channel DDR5), well short of the ~10 TOPS compute ceiling.
+# Same memory wall that caps LLM decode on this box. 256^3/768^3 fail a config
+# minimum (M/(m*n_aie_rows) must be even, i.e. M a multiple of 512 here) — not a bug.
+size,dtype,cores,NPU_us_avg,GFLOPS,verify
+256x256x256,i8->i32,16,,,FAIL(config-min)
+512x512x512,i8->i32,16,315.5,850.82,PASS
+1024x1024x1024,i8->i32,16,1069.3,2008.28,PASS
+1536x1536x1536,i8->i32,16,3807.7,1903.46,PASS
+2048x2048x2048,i8->i32,16,10410.8,1650.20,PASS
+4096x4096x4096,i8->i32,16,97934.1,1403.38,PASS

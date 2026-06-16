@@ -104,6 +104,17 @@ Extra runs once M1–M4 worked (proof in [`proof/`](proof/)):
   | i16      | ~92 GFLOPS  | ~892 GFLOPS |
   | i8       | ~148 GFLOPS | ~979 GFLOPS |
 
+- **int8 size sweep** (`run/sweep-int8.sh`, 16 tiles, i8→i32, numpy-verified each
+  point) — throughput **peaks ~2.0 TFLOPS at 1024³** then declines: bandwidth-bound
+  well below the ~10 TOPS compute ceiling (the same DDR5 wall that caps LLM decode
+  on this box). Proof `proof/stretch-int8-sweep.csv`.
+
+  | M=K=N  | 512 | 1024 | 1536 | 2048 | 4096 |
+  |--------|----:|-----:|-----:|-----:|-----:|
+  | GFLOPS | 851 | **2008** | 1903 | 1650 | 1403 |
+
+  (256³/768³ fail a config minimum: `M/(m·n_aie_rows)` must be even → M a multiple of 512 here.)
+
 - **Fused conv2d + ReLU** (`run/run-m3.sh fuse_relu=1`) — the 1×1 int8 conv with
   ReLU fused via unsigned-int8 saturation (uint8 output), verified against a
   PyTorch golden model that includes `nn.ReLU`. ~0.53 ms.

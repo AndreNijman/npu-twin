@@ -33,6 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Phase 8 stretch: **int8 matmul** (148 GFLOPS single-core / 979 GFLOPS 16-core,
   numpy-verified — Peano #2793/#2388 did not bite) and **fused int8 conv2d + ReLU**
   (uint8 out, torch-verified). Proof `stretch-int8-matmul.txt`, `stretch-conv-relu.txt`.
+- Phase 8 stretch: **int8 matmul size sweep** (`run/sweep-int8.sh`, 16 tiles,
+  512³–4096³, numpy-verified each point) — int8 throughput peaks **~2.0 TFLOPS at
+  1024³** then declines (bandwidth-bound, well below the ~10 TOPS compute ceiling).
+  Proof `stretch-int8-sweep.csv`.
 - `xdna_probe.probe()`: new `npu-active-open-stack` verdict + `iron_runtime_importable`
   field — reports the open stack can drive the NPU (`pyxrt` + `xrt-smi` + device).
 
