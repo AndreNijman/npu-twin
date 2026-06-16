@@ -8,14 +8,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Phase 8 / `project-c/`: **a hand-written kernel runs on the XDNA 1 "Phoenix"
+  NPU** under Linux via the fully open IRON/mlir-aie/Peano stack — no Vitis, no
+  VitisAI EP. Milestone **M1** (`passthrough_kernel` → `PASS!`, ~125 µs on-NPU)
+  reached on Void/kernel-7.0.11 with XRT 2.25.0 built from `amd/xdna-driver`
+  (userspace only, `-nokmod`; in-tree `amdxdna` driver untouched). Reproducer
+  (`env/aie-env.sh`, `run/run-m1.sh`), proof artifacts (run log, AIE2
+  disassembly, `xrt-smi` enumeration, toolchain manifest), and full Void bring-up
+  runbook (`INSTALL.md`).
+- `xdna_probe.probe()`: new `npu-active-open-stack` verdict + `iron_runtime_importable`
+  field — reports the open stack can drive the NPU (`pyxrt` + `xrt-smi` + device).
 
 ### Changed
+- ADR-0002's "no usable NPU compute on Linux" premise is **superseded** by
+  ADR-0007 (open stack) — the NPU is now a compute target, not just a probe
+  target. README narrative + status matrix updated (Phase 8 row).
 
 ### Removed
 
 ### Fixed
 
 ### Docs
+- ADR-0007 (mlir-aie/IRON/Peano over VitisAI for XDNA 1), ADR-0008
+  (passthrough_kernel as M1; M1→M4 milestone ladder).
 
 ## [0.1.0] - 2026-04-19
 

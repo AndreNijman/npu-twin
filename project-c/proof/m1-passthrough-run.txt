@@ -1,0 +1,18 @@
+Autocomplete not enabled for XRT tools
+XILINX_XRT        : /opt/xilinx/xrt
+PATH              : /opt/xilinx/xrt/bin:/home/andre/src/mlir-aie/ironenv314/bin:/home/andre/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin:/usr/lib/jvm/default-jdk/bin:/usr/lib/jvm/default-jre/bin:/home/andre/.claude/plugins/cache/openai-codex/codex/1.0.4/bin
+LD_LIBRARY_PATH   : /opt/xilinx/xrt/lib
+PYTHONPATH        : /opt/xilinx/xrt/python
+=== sanity: pyxrt + aie import ===
+pyxrt OK: /opt/xilinx/xrt/python/pyxrt.cpython-314-x86_64-linux-gnu.so
+aie OK: /home/andre/src/mlir-aie/ironenv314/lib/python3.14/site-packages/mlir_aie/python/aie/__init__.py
+=== xrt-smi sees device ===
+Device(s) Present
+|BDF             |Name          |Architecture  |Topology  |
+|----------------|--------------|--------------|----------|
+=== RUN passthrough_kernel on the NPU (JIT-compiles first time) ===
+
+NPU time     (avg/min/max us): 125.4 / 102.1 / 135.7
+End-to-end   (avg/min/max us): 215.9 / 191.2 / 238.1
+PASS!
+RUN_RC=0

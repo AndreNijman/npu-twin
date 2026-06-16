@@ -16,6 +16,7 @@ def test_probe_verdict_is_string():
     assert isinstance(s.verdict, str)
     assert s.verdict in {
         "runtime-available",
+        "npu-active-open-stack",
         "xrt-only-no-inference-runtime",
         "device-only-no-userspace",
         "no-device",

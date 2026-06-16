@@ -1,0 +1,62 @@
+# Kernel object compiled by Peano (llvm-aie) for the AIE2/Phoenix engine
+# /home/andre/.npu/cache/8c4c82185a2785943ead5ced/passThroughLine_71527809.o: ELF 32-bit LSB relocatable, *unknown arch 0x108* version 1 (SYSV), not stripped
+
+Format: elf32-aie
+    Class: 32-bit (0x1)
+  Machine: EM_AIE (0x108)
+
+
+/home/andre/.npu/cache/8c4c82185a2785943ead5ced/passThroughLine_71527809.o:	file format elf32-aie
+
+Disassembly of section .text.passThroughLine:
+
+00000000 <71527809_passThroughLine>:
+       0: c0 03 00 20 00 00 00 00 00 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		j	#0x0;		nopv	
+      10: 19 00 00 10  	nopx	
+      14: 01 00        	nop	
+      16: 01 00        	nop	
+      18: 01 00        	nop	
+      1a: 4d 16 40 08 20 00    	mova	r0, #0x1;		mov	r1, r0
+
+Disassembly of section .text._Z15passThrough_aieIhLi64EEvPT_S1_ii:
+
+00000000 <_Z15passThrough_aieIhLi64EEvPT_S1_ii>:
+       0: c0 03 00 88 03 00 7c 00 02 00 00 00 00 00 00 00      	nopb	;		nopa	;		nops	;		mul	r0, r1, r0;		nopm	;		nopv	
+      10: 1d 10 00 00 00 00    	nopa	;		event	#0x0
+      16: 55 00 e0 00 00 00    	movxm	ls, #0x0
+      1c: bb 10 00 38 02 00 00 48 00 08	mova	r1, #0x40;		movxm	le, #0x0
+      26: 99 0c 76 10  	ltu	r27, r1, r0
+      2a: 19 1e 00 10  	sel.nez	r0, r0, r1, r27
+      2e: 1d ff 01 48 40 ff    	mova	r1, #-0x6;		add	r0, r0, #-0x1
+      34: 85 1d 00 28 2c 10    	vldb	wh0, [p0, #0x20];		lshl	r0, r0, r1
+      3a: 1d 07 00 78 b1 00    	vlda	wh2, [p0], #0x40;		add	r0, r0, #0x1
+      40: c0 03 00 38 3f b8 02 00 00 00 00 00 00 00 85 05      	vldb	wh0, [p0, #0x20];		nopa	;		nops	;		nopx	;		add.nc	lc, r0, #-0x4;		nopv	
+      50: c0 03 00 00 00 00 00 00 00 00 00 78 b1 00 00 00      	nopb	;		vlda	wh2, [p0], #0x40;		nops	;		nopxm	;		nopv	
+      60: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 85 05      	vldb	wh0, [p0, #0x20];		nopa	;		nops	;		nopxm	;		nopv	
+      70: c0 03 00 00 00 00 00 00 00 00 00 78 b1 00 00 00      	nopb	;		vlda	wh2, [p0], #0x40;		nops	;		nopxm	;		nopv	
+      80: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 85 05      	vldb	wh0, [p0, #0x20];		nopa	;		nops	;		nopxm	;		nopv	
+      90: c0 03 00 00 00 00 00 00 c0 83 06 79 b1 00 00 00      	nopb	;		vlda	wh2, [p0], #0x40;		vst	wh0, [p1, #0x20];		nopxm	;		nopv	
+
+000000a0 <.LBB1_1>:
+      a0: c0 03 00 00 00 00 00 00 c0 8b 05 01 00 00 85 05      	vldb	wh0, [p0, #0x20];		nopa	;		vst	wh2, [p1], #0x40;		nopxm	;		nopv	
+
+000000b0 <.L_LEnd0>:
+      b0: c0 03 00 00 00 00 00 00 c0 83 06 79 b1 00 00 00      	nopb	;		vlda	wh2, [p0], #0x40;		vst	wh0, [p1, #0x20];		nopxm	;		nopv	
+      c0: c0 03 00 00 00 00 00 00 c0 8b 05 01 00 00 00 00      	nopb	;		nopa	;		vst	wh2, [p1], #0x40;		nopxm	;		nopv	
+      d0: 3d 00 00 78 d0 20    	vst	wh0, [p1, #0x20];		nopx	
+      d6: 3d 18 00 78 b1 20    	vst	wh2, [p1], #0x40;		ret lr	
+      dc: d9 83 06 09  	vst	wh0, [p1, #0x20]
+      e0: d9 8b 05 09  	vst	wh2, [p1], #0x40
+      e4: d9 83 06 09  	vst	wh0, [p1, #0x20]
+      e8: d9 8b 05 09  	vst	wh2, [p1], #0x40
+      ec: 19 10 00 12  	event	#0x1
+
+Disassembly of section .text.passThroughTile:
+
+00000000 <passThroughTile>:
+       0: 95 00 00 00 00 00    	j	#0x0
+       6: 01 00        	nop	
+       8: 01 00        	nop	
+       a: 01 00        	nop	
+       c: 01 00        	nop	
+       e: 01 00        	nop	

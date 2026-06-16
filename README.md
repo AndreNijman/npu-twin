@@ -20,13 +20,17 @@ current AMD laptop silicon:
    suite while presenced polls the UVC webcam at 2 Hz; both services
    survive the other being killed; 0 OOM / 0 thermal-throttle events.
 
-The other answer is the one that isn't in any marketing deck: **XDNA 1
-has no usable Linux execution runtime today**. The device enumerates,
-the kernel driver (`amdxdna`) loads, XRT lists it, and that's where the
-story ends for llama.cpp and OpenCV. ADR-0002 and the architecture doc
-cover that in detail. This repo publishes the gap honestly rather than
-pretending it isn't there — that's the main thing it has to offer
-beyond the numbers.
+The other answer used to be the one that isn't in any marketing deck:
+**through AMD's own stack, XDNA 1 has no usable Linux execution runtime** —
+VitisAI silently falls back to CPU, OGA Hybrid and FastFlowLM are
+Windows/XDNA2-only (ADR-0002). The device enumerates, `amdxdna` loads, XRT
+lists it, and that's where the *AMD-stack* story ends for llama.cpp and OpenCV.
+
+**Phase 8 (2026-06) changes the ending.** Using the fully open
+IRON/mlir-aie/Peano stack — no Vitis, no VitisAI EP — a hand-written kernel now
+runs on the Phoenix NPU under Linux (`PASS!`, ~125 µs on-NPU on Void/kernel-7.0).
+See [`project-c/`](project-c/) and [ADR-0007](docs/decisions/0007-mlir-aie-over-vitisai.md).
+The repo still publishes the AMD-stack gap honestly — it just no longer ends there.
 
 ## Hardware tested
 
@@ -51,6 +55,7 @@ Full stack table in [`docs/hardware.md`](docs/hardware.md).
 | 5   | Hyprland wiring + README + daily-driver polish | ✅ |
 | 6   | Opportunistic XDNA 1 probe + honest gap writeup | ✅ |
 | 7   | Demo + `v0.1.0` | ✅ |
+| 8   | Project C: kernel on the XDNA 1 NPU via open mlir-aie/Peano (M1) | ✅ |
 
 ## Install
 

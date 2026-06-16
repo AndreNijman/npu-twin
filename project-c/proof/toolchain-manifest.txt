@@ -1,0 +1,8 @@
+# Phase 8 M1 toolchain manifest (2026-06-16T13:12:21Z)
+host: Linux 7.0.11_1 x86_64, Void Linux, glibc 2.41
+kernel amdxdna: in-tree 7.0.11_1 SMP preempt mod_unload 
+NPU firmware: npu.sbin.1.5.5.391.zst
+XRT: 
+mlir_aie: 1.3.3.dev8+g0d49a88
+llvm-aie (Peano): 21.0.0.2026061601+dc0ebf29
+python: 3.14 (venv ironenv314)

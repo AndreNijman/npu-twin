@@ -1,6 +1,8 @@
 """XDNA 1 NPU opportunistic probe.
 
-Per ADR-0002, XDNA 1 has no usable Linux inference runtime in 2026-04.
+Per ADR-0002, XDNA 1 had no usable Linux inference runtime in 2026-04 —
+but ADR-0007 (2026-06) supersedes that premise: the open IRON/mlir-aie/Peano
+stack runs hand-written kernels on the NPU today, no VitisAI (see project-c/).
 This module does NOT offload face/gaze ops. It reports whether the
 device node exists, whether XRT is installed, and — when invoked via
 `presenced --probe-npu` — whether onnxruntime can actually put any op
@@ -17,7 +19,12 @@ Two entry points:
 When AMD ships a working VitisAI EP for XDNA 1 on Linux, the deep-probe
 verdict flips from `cpu-fallback` / `onnxruntime-unavailable` /
 `vitis-ep-unavailable` → `npu-active`. That flip is the only
-deliverable of this module.
+deliverable of `deep_probe()`.
+
+Separately, the lightweight `probe()` reports `npu-active-open-stack` when
+the open IRON/mlir-aie userspace is installed (`pyxrt` importable + `xrt-smi`
+present + device node) — that path runs kernels on the NPU today without
+VitisAI. The probe is agnostic to *which* userspace drives the device.
 """
 
 from __future__ import annotations
@@ -41,6 +48,7 @@ class XDNAStatus:
     device_path: Path
     xrt_cli_present: bool
     vitis_ep_importable: bool
+    iron_runtime_importable: bool
     verdict: str
 
 
@@ -66,9 +74,15 @@ def probe(device_path: Path = Path("/dev/accel/accel0")) -> XDNAStatus:
     device_present = device_path.exists()
     xrt = shutil.which("xrt-smi") is not None or shutil.which("xbutil") is not None
     vitis = importlib.util.find_spec("onnxruntime_vitisai") is not None
+    # Open IRON/mlir-aie stack: pyxrt (the XRT Python binding) being importable
+    # means the open userspace can drive the NPU directly (ADR-0007), the path
+    # that actually runs kernels on XDNA 1 on Linux today.
+    iron = importlib.util.find_spec("pyxrt") is not None
 
     if vitis and device_present:
         verdict = "runtime-available"
+    elif iron and xrt and device_present:
+        verdict = "npu-active-open-stack"
     elif xrt and device_present:
         verdict = "xrt-only-no-inference-runtime"
     elif device_present:
@@ -81,6 +95,7 @@ def probe(device_path: Path = Path("/dev/accel/accel0")) -> XDNAStatus:
         device_path=device_path,
         xrt_cli_present=xrt,
         vitis_ep_importable=vitis,
+        iron_runtime_importable=iron,
         verdict=verdict,
     )
 
