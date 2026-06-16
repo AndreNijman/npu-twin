@@ -1,0 +1,43 @@
+# M3 1x1 int8 conv2d AIE2 microkernel (conv2dk1_i8_f10e9fbf.o)
+# ELF 32-bit LSB relocatable, *unknown arch 0x108* version 1 (SYSV), not stripped
+# int8 conv = vector MAC/MUL loop on AIE2 (256 MAC/cycle at int8).
+
+## instruction mix:
+     68 vst
+     32 vlda
+     10 mul
+      6 vldb
+      4 vmac
+      4 srs
+
+## excerpt:
+
+/home/andre/src/mlir-aie/programming_examples/ml/conv2d/build/final.prj/conv2dk1_i8_f10e9fbf.o:	file format elf32-aie
+
+Disassembly of section .text._Z18conv2dk1_i8_vectorPaS_S_iiii:
+
+00000000 <_Z18conv2dk1_i8_vectorPaS_S_iiii>:
+       0: c0 03 00 00 00 00 00 00 00 00 00 00 00 00 f0 02      	paddb	[sp], #0x580;		nopa	;		nops	;		nopxm	;		nopv	
+      10: 3d 00 00 d0 0e fe    	st	p6, [sp, #-128];		nopx	
+      16: 59 f6 3c 1b  	mov	p3, sp
+      1a: 77 10 70 12 02 00 80 fe f0 77 06 75  	padda	[p3], #-1408;		st	p7, [sp, #-124];		movxm	dj0, #0x4e0
+      26: 1d 10 00 00 21 62    	st.s8	r4, [p3, dj0];		event	#0x0
+      2c: 01 00        	nop	
+      2e: 01 00        	nop	
+      30: 01 00        	nop	
+      32: 01 00        	nop	
+      34: 59 08 00 00  	mova	r4, #0x0
+      38: 4d 76 36 2c 00 14    	mova	m0, #0xa0;		mov	p4, p3
+      3e: 19 08 09 04  	st.s8	r4, [p4], m0
+      42: 01 00        	nop	
+      44: 09 02 3c 00  	vclr	cm0
+      48: 01 00        	nop	
+      4a: 01 00        	nop	
+      4c: 01 00        	nop	
+      4e: 01 00        	nop	
+      50: 59 83 0e 0b  	vst	amhh0, [p3, #0x60]
+      54: 59 82 0a 0b  	vst	amhl0, [p3, #0x40]
+      58: 03 20 3b a4 00 28 d0 60      	vst	amlh0, [p3, #0x20];		mov	r5, p4
+      60: bb 22 3b 1b 42 80 02 2b 00 28	mova	m0, #0x140;		vst	amll0, [p3, #0x0];		mov	p4, p3
+      6a: 19 08 09 04  	st.s8	r4, [p4], m0
+      6e: 01 00        	nop	

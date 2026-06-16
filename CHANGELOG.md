@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   against a numpy reference — Peano GEMM bug #2793 did not affect this config.
   `run/run-m2.sh` + proof (`m2-matmul-run.txt`; `m2-kernel-aie2.disasm` shows the
   `vmac` accumulation loop on AIE2).
+- Phase 8 **M3**: 1×1 **int8** `conv2d` (32×32, 64→64 ch, `kernels.conv2dk1_i8`,
+  Peano) runs on one AIE core (~0.55 ms) and verifies against a PyTorch golden
+  model — the int8 ML kernel relevant to YuNet's quantization. `run/run-m3.sh`
+  + proof (`m3-conv2d-run.txt`, `m3-kernel-aie2.disasm`). Needs `torch` (CPU).
 - `xdna_probe.probe()`: new `npu-active-open-stack` verdict + `iron_runtime_importable`
   field — reports the open stack can drive the NPU (`pyxrt` + `xrt-smi` + device).
 

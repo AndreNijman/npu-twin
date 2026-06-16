@@ -33,6 +33,12 @@ against numpy** (`assert_close_with_benchmark`) — a real `vmac` (vector
 multiply-accumulate) loop on the AIE2 engine, not a passthrough.
 `sg render -c 'bash run/run-m2.sh'`.
 
+**M3 (2026-06-16):** a vectorized **1×1 int8 conv2d** (32×32, 64→64 channels,
+`kernels.conv2dk1_i8`, Peano) ran on one AIE core in ~0.55 ms and **verified
+against a PyTorch golden model**. int8 is AIE2's peak-density datatype
+(256 MAC/cycle) and matches YuNet's quantization — this is the npu-twin-relevant
+ML kernel. `sg render -c 'bash run/run-m3.sh'` (needs `torch` CPU in the venv).
+
 Proof artifacts are in [`proof/`](proof/):
 
 | File | What it shows |
@@ -43,6 +49,8 @@ Proof artifacts are in [`proof/`](proof/):
 | `toolchain-manifest.txt` | exact versions used |
 | `m2-matmul-run.txt` | M2 matmul `PASS!` + 92.2 GFLOPS, numpy-verified |
 | `m2-kernel-aie2.disasm` | the matmul microkernel = a `vmac` accumulation loop on AIE2 |
+| `m3-conv2d-run.txt` | M3 int8 conv2d `PASS!` vs a PyTorch golden model |
+| `m3-kernel-aie2.disasm` | the int8 conv microkernel = `vmac`/`mul` + `srs` (requant) on AIE2 |
 
 ## The stack
 
@@ -76,7 +84,7 @@ sg render -c 'bash project-c/run/run-m1.sh'   # render group needed for /dev/acc
 ## Scope (honest)
 
 M1 is a *passthrough* (toolchain + round-trip proof); **M2 is a real tuned
-kernel** — a single-core `matmul` at ~92 GFLOPS, CPU-verified. The ladder (see
-`docs/decisions/0008-passthrough-m1-poc.md`): M1 ✅, M2 ✅, **M3** = standalone
-int8 `conv2d` (next), M4 = whole-array matmul. YuNet stays on CPU; a full model
+kernel** and **M3 an int8 conv2d** — both CPU-verified. The ladder (see
+`docs/decisions/0008-passthrough-m1-poc.md`): M1 ✅, M2 ✅, M3 ✅,
+**M4** = whole-array (multi-tile) matmul (next). YuNet stays on CPU; a full model
 on the NPU is explicitly out of scope.

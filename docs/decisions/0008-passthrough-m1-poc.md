@@ -19,8 +19,8 @@ ladder for project-c:
 |---|--------|--------|
 | **M1** | passthrough_kernel runs on the NPU (`PASS!`) | ✅ done 2026-06-16 |
 | **M2** | single-core `matmul` running + measured + CPU-verified | ✅ done 2026-06-16 |
-| **M3** | standalone int8 `conv2d` on one tile, vs CPU reference | next |
-| M4 | whole-array (16-core) matmul | stretch |
+| **M3** | standalone int8 `conv2d` on one tile, vs CPU reference | ✅ done 2026-06-16 |
+| M4 | whole-array (16-core) matmul | next (stretch) |
 
 ## Reasoning
 
@@ -54,4 +54,13 @@ ladder for project-c:
   did *not* affect this config. The microkernel is a `vmac` (vector
   multiply-accumulate) loop on the AIE2 engine (`project-c/proof/m2-*`).
   Reproduce: `sg render -c 'bash project-c/run/run-m2.sh'`.
-- Next: M3 (standalone int8 `conv2d`) against the AIE-vectorization conv2d example.
+- **M3 result (2026-06-16):** mlir-aie `ml/conv2d` — a vectorized **1×1 int8**
+  conv2d (32×32, 64→64 channels, `kernels.conv2dk1_i8`, Peano) ran on one AIE core
+  in ~0.55 ms and **verified against a PyTorch golden model** (`run_conv_torch_test`,
+  atol = 2·out_scale). int8 is AIE2's peak-density datatype (256 MAC/cycle) and
+  matches YuNet's quantization. Microkernel = vector `vmac`/`mul` + `srs`
+  (shift-round-saturate requant). Proof `project-c/proof/m3-*`; reproduce
+  `sg render -c 'bash project-c/run/run-m3.sh'`. NB the shipped example is the
+  **1×1** (pointwise/channel-mixing) case, not 3×3 — the 3×3 shape in the Phase-8
+  scoping was illustrative; 1×1 int8 satisfies "standalone int8 conv2d, CPU-verified".
+- Next: M4 (whole-array matmul) — single-core M2/M3 use 1 of the 6×5 tiles.

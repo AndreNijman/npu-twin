@@ -1,0 +1,7 @@
+python3 /home/andre/src/mlir-aie/programming_examples/ml/conv2d/test.py --xclbin build/final.xclbin --instr build/insts.bin --kernel MLIR_AIE \
+	-wd 32 -ht 32 -ic 64 -oc 64 
+
+Avg NPU time: 565us.
+
+PASS!
+
