@@ -1,0 +1,17 @@
+# M6 — interactive multi-turn chat on the XDNA1 NPU (every matmul on the NPU, bf16)
+# llama_npu.py --interactive (via run/chat-npu.sh); greedy; KV cache carried across turns; streaming.
+# (scripted stdin: two user turns + /exit)
+
+[backend=npu] loading Llama-3.2-1B …
+Llama-3.2-1B-Instruct on the XDNA1 NPU  (every matmul on the Phoenix NPU, bf16; greedy)
+This runs on a 1B model on a single AIE core at ~0.2 tok/s — replies stream in slowly, that's expected.
+commands: /reset (clear context)  /exit (quit)  Ctrl-D to quit
+system: You are a helpful assistant.
+
+you> bot> I'm here to help.
+[6 tok, 17s, 0.36 tok/s]
+
+you> bot> Red.
+[2 tok, 7s, 0.28 tok/s]
+
+you> bye.

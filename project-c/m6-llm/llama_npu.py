@@ -233,6 +233,112 @@ class LlamaNPU:
         return out
 
 
+# ----------------------------------------------------------------------------
+# sampling + interactive chat
+# ----------------------------------------------------------------------------
+BOS = 128000
+SOT, EOT_HDR, EOT = 128006, 128007, 128009  # start/end_header_id, eot_id
+EOS_IDS = {128001, 128008, 128009}  # end_of_text, eom_id, eot_id
+
+
+def sample_next(logits, temp, top_p, rng, greedy):
+    if greedy or temp <= 0.0:
+        return int(np.argmax(logits))
+    z = logits.astype(np.float64) / temp
+    z -= z.max()
+    p = np.exp(z)
+    p /= p.sum()
+    order = np.argsort(p)[::-1]
+    cum = np.cumsum(p[order])
+    cut = int(np.searchsorted(cum, top_p)) + 1  # nucleus: smallest set with mass >= top_p
+    keep = order[:cut]
+    pk = p[keep]
+    pk /= pk.sum()
+    return int(rng.choice(keep, p=pk))
+
+
+def _user_turn(user, first, system):
+    """Llama-3 chat template for one user turn (+ open assistant header).
+    BOS + optional system block only on the first turn (KV cache carries the rest)."""
+    t = ""
+    if first:
+        t += "<|begin_of_text|>"
+        if system:
+            t += f"<|start_header_id|>system<|end_header_id|>\n\n{system}<|eot_id|>"
+    t += (f"<|start_header_id|>user<|end_header_id|>\n\n{user}<|eot_id|>"
+          f"<|start_header_id|>assistant<|end_header_id|>\n\n")
+    return t
+
+
+def chat_repl(model, tok, system, max_new, temp, top_p, greedy):
+    BOLD, DIM, RST = "\033[1m", "\033[2m", "\033[0m"
+    rng = np.random.default_rng()
+    mode = "greedy" if (greedy or temp <= 0) else f"temp={temp} top_p={top_p}"
+    print(f"{BOLD}Llama-3.2-1B-Instruct on the XDNA1 NPU{RST}  "
+          f"(every matmul on the Phoenix NPU, bf16; {mode})")
+    print(f"{DIM}This runs on a 1B model on a single AIE core at ~0.2 tok/s — replies "
+          f"stream in slowly, that's expected.{RST}")
+    print(f"{DIM}commands: /reset (clear context)  /exit (quit)  Ctrl-D to quit{RST}")
+    if system:
+        print(f"{DIM}system: {system}{RST}")
+    first = True
+    while True:
+        try:
+            user = input(f"\n{BOLD}you>{RST} ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nbye.")
+            return
+        if not user:
+            continue
+        if user in ("/exit", "/quit"):
+            print("bye.")
+            return
+        if user == "/reset":
+            model.reset()
+            first = True
+            print(f"{DIM}(context cleared){RST}")
+            continue
+
+        ids = tok.encode(_user_turn(user, first, system), add_special_tokens=False).ids
+        first = False
+        logits = None
+        for t in ids:                       # prefill the user turn into the KV cache
+            logits = model.forward_token(int(t))
+
+        sys.stdout.write(f"{BOLD}bot>{RST} ")
+        sys.stdout.flush()
+        out_ids, printed = [], ""
+        t0 = time.time()
+        for _ in range(max_new):
+            nxt = sample_next(logits, temp, top_p, rng, greedy)
+            if nxt in EOS_IDS:
+                break
+            out_ids.append(nxt)
+            full = tok.decode(out_ids)      # decode the whole reply, print only the delta
+            # Hold back trailing U+FFFD: an incomplete multi-byte UTF-8 char (BPE
+            # splits e.g. an emoji across several tokens) decodes to '�' until the
+            # remaining bytes arrive — and it resolves to a same-length char, so a
+            # naive delta would print '�' and then never emit the real character.
+            # rstrip the trailing replacement char(s); resolved-prefix text is
+            # decode-stable, so `printed` stays a prefix and len() tracks the delta.
+            safe = full.rstrip("�")
+            if len(safe) > len(printed):
+                sys.stdout.write(safe[len(printed):])
+                sys.stdout.flush()
+                printed = safe
+            logits = model.forward_token(nxt)
+        # flush any held-back tail once generation ends
+        full = tok.decode(out_ids)
+        if len(full) > len(printed):
+            sys.stdout.write(full[len(printed):])
+            sys.stdout.flush()
+        # terminate the assistant turn in the KV cache so the next turn is well-formed
+        model.forward_token(EOT)
+        dt = time.time() - t0
+        n = len(out_ids)
+        print(f"\n{DIM}[{n} tok, {dt:.0f}s, {n / max(dt, 1e-9):.2f} tok/s]{RST}")
+
+
 def main():
     global MODEL_DIR
     ap = argparse.ArgumentParser()
@@ -240,12 +346,27 @@ def main():
     ap.add_argument("--backend", choices=["npu", "cpu", "cpu_fp32"], default="npu")
     ap.add_argument("--prompt", default="The capital of France is")
     ap.add_argument("--chat", action="store_true", help="wrap prompt in Llama-3 chat template")
-    ap.add_argument("--max-new", type=int, default=30)
+    ap.add_argument("--max-new", type=int, default=None,
+                    help="max new tokens (default 30 single-shot, 256 chat REPL)")
     ap.add_argument("--raw", action="store_true", help="no BOS / no chat template")
+    ap.add_argument("--interactive", "-i", action="store_true", help="multi-turn chat REPL")
+    ap.add_argument("--system", default="You are a helpful assistant.", help="system prompt (chat REPL)")
+    ap.add_argument("--temp", type=float, default=0.6, help="sampling temperature (chat REPL); 0 = greedy")
+    ap.add_argument("--top-p", type=float, default=0.9, help="nucleus top-p (chat REPL)")
+    ap.add_argument("--greedy", action="store_true", help="deterministic argmax decoding")
     args = ap.parse_args()
     MODEL_DIR = args.model_dir
 
     tok = Tokenizer.from_file(f"{args.model_dir}/tokenizer.json")
+
+    if args.interactive:
+        print(f"[backend={args.backend}] loading Llama-3.2-1B …", flush=True)
+        model = LlamaNPU(args.model_dir, args.backend)
+        chat_repl(model, tok, args.system, args.max_new or 256,
+                  args.temp, args.top_p, args.greedy)
+        return
+    max_new = args.max_new or 30
+
     if args.chat:
         text = ("<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n\n"
                 f"{args.prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n")
@@ -260,7 +381,7 @@ def main():
     eos_ids = {128001, 128008, 128009}
 
     t0 = time.time()
-    out = model.generate(ids, args.max_new, eos_ids)
+    out = model.generate(ids, max_new, eos_ids)
     dt = time.time() - t0
     n = len(out)
     txt = tok.decode(out)

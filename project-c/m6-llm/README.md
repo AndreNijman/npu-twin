@@ -25,6 +25,33 @@ $ python3 llama_npu.py --backend npu --chat --prompt "In one sentence, what is a
                                    # 1B model's own knowledge limit, not a bug)
 ```
 
+## Chat with it (interactive)
+
+```bash
+bash project-c/run/chat-npu.sh                 # or: sg render -c 'bash project-c/run/chat-npu.sh'
+```
+
+A multi-turn REPL — every matmul on the NPU, replies **stream token-by-token**,
+the KV cache is carried across turns. In-chat commands: `/reset` (clear context),
+`/exit` (quit), Ctrl-D. Flags pass through (`--greedy`, `--temp 0.8 --top-p 0.95`,
+`--system "You are a terse pirate."`, `--max-new 128`).
+
+```
+Llama-3.2-1B-Instruct on the XDNA1 NPU  (every matmul on the Phoenix NPU, bf16; greedy)
+you> Hi! Reply in 5 words.
+bot> I'm here to help.
+[6 tok, 17s, 0.36 tok/s]
+you> Name one primary color.
+bot> Red.
+[2 tok, 7s, 0.28 tok/s]
+```
+
+Expect **~0.2 tok/s** (1B model, single AIE core) — replies stream in slowly,
+that's the honest speed (see scope below). The streaming decode holds back
+incomplete multi-byte UTF-8 (emoji/CJK) until the bytes complete, so output is
+never garbled (hardened after an adversarial review caught the naive delta-print
+corrupting split emoji).
+
 ## What runs where
 
 The transformer's **parameter-bearing compute runs on the NPU**; the
@@ -96,7 +123,8 @@ unconstrained (down_proj K=8192 compiles directly).
 | File | What |
 |------|------|
 | `npu_gemv.py` | bf16 GEMV on the NPU (IRON design + M-blocked host wrapper); `python3 npu_gemv.py [--full]` self-tests vs numpy |
-| `llama_npu.py` | Llama-3.2-1B forward + KV-cache greedy generation; `--backend {npu,cpu,cpu_fp32}` |
+| `llama_npu.py` | Llama-3.2-1B forward + KV-cache generation; `--backend {npu,cpu,cpu_fp32}`; `--interactive` multi-turn streaming chat REPL |
+| `../run/chat-npu.sh` | launcher for the interactive chat (`--interactive`) on the NPU |
 | `verify_m6.py` | NPU-vs-fp32 logits gate |
 | `debug_gemv.py` | parametric GEMV harness (dtype × scalar/vectorized) used to bring up bf16 |
 | `PATCH-bf16-gemv.md` | the two mv.cc / linalg.py edits that enable bf16 GEMV |
@@ -108,8 +136,9 @@ unconstrained (down_proj K=8192 compiles directly).
 pip install tokenizers safetensors            # into the IRON venv
 # fetch unsloth/Llama-3.2-1B-Instruct (bf16) -> ~/models/llama-3.2-1b-instruct
 source ~/src/mlir-aie/aie-env314.sh
-sg render -c 'bash ../run/run-m6.sh'           # demo
+sg render -c 'bash ../run/run-m6.sh'           # one-shot demo
 sg render -c 'bash ../run/run-m6.sh --verify'  # NPU vs fp32 logits
+sg render -c 'bash ../run/chat-npu.sh'         # interactive multi-turn chat
 ```
 
 ## Hardware / versions (this run)

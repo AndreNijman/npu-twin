@@ -69,6 +69,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   faster. `run/run-m6.sh`; proof `m6-llm-run.txt`, `m6-chat-demo.txt`,
   `m6-gemv-bf16-shapes.txt`, `m6-gemv-bf16-aie2.disasm`, `m6-xrt-smi.txt`. See
   ADR-0010.
+- M6 **interactive chat** (`llama_npu.py --interactive`, `run/chat-npu.sh`): a
+  multi-turn streaming REPL on the NPU — Llama-3 chat template, KV cache carried
+  across turns, token streaming, top-p/greedy sampling, `/reset` + `/exit`. The
+  streaming decoder holds back incomplete multi-byte UTF-8 (emoji/CJK split
+  across BPE tokens) until it resolves — fixing a delta-print corruption caught
+  by an adversarial multi-reviewer pass. Proof `m6-chat-interactive.txt`.
 
 ### Changed
 - ADR-0002's "no usable NPU compute on Linux" premise is **superseded** by
