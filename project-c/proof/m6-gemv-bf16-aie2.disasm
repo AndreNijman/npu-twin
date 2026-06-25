@@ -1,0 +1,58 @@
+# M6 proof — the bf16 GEMV core that runs every Llama-3.2-1B matmul on the XDNA1 NPU
+# Peano (llvm-aie) emits AIE2 (EM_AIE 0x108) VLIW; the matvec_vectorized_bf16_f32 symbol
+# is the bf16 combo we enabled in mv.cc. Disassembled with llvm-aie's objdump (knows elf32-aie).
+# kernel obj: /home/andre/.npu/cache/966e18b33280daf166c80a92/matvec_vectorized_bf16_f32_78c1c067.o
+# core elf:   /home/andre/.npu/cache/966e18b33280daf166c80a92/main_core_0_2.elf
+
+## kernel object symbols (bf16 matvec + f32 zero present):
+00000000 T 78c1c067_matvec_vectorized_bf16_f32
+00000000 T matvec_scalar_bf16_f32
+00000000 T zero_scalar_f32
+00000000 T zero_vectorized_f32
+
+## core ELF header — Machine EM_AIE (0x108 = 264 dec), 32-bit AIE2, not x86:
+  Class:                             ELF32
+  Type:                              EXEC (Executable file)
+  Machine:                           AMD/Xilinx AIEngine architecture
+
+## AIE2 VLIW disassembly of the bf16 matvec core (first instructions):
+
+/home/andre/.npu/cache/966e18b33280daf166c80a92/main_core_0_2.elf:	file format elf32-aie
+
+Disassembly of section .text:
+
+00000000 <__start>:
+       0: 15 01 00 70 02 00    	jl	#0x4e0
+       6: 55 00 e0 0c 07 00    	movxm	sp, #0x70000
+       c: 01 00        	nop	
+       e: 01 00        	nop	
+      10: 01 00        	nop	
+      12: 01 00        	nop	
+      14: 37 88 03 00 00 00 00 00 00 00 00 00  	nops	;		nopb	;		nopx	;		nopm	
+
+00000020 <main>:
+      20: 7f 00 00 00 00 00 00 00 00 40 03 00 00 00    	nopa	;		paddb	[sp], #0x40;		nopxm	;		nops	
+      2e: 19 66 fd 0f  	st	r19, [sp, #-24]
+      32: 19 e8 fd 0f  	st	r20, [sp, #-20]
+      36: 19 e0 fb 0f  	st	r16, [sp, #-36]
+      3a: 3b 11 40 9a c4 01 00 d0 fe ff	st	p6, [sp, #-4];		movxm	p1, #0x71480
+      44: 99 ce f8 0f  	st	p1, [sp, #-60]
+      48: 99 42 fb 0f  	st	lr, [sp, #-40]
+      4c: 19 62 fc 0f  	st	r17, [sp, #-32]
+      50: 19 e4 fc 0f  	st	r18, [sp, #-28]
+      54: 19 6a fe 0f  	st	r21, [sp, #-16]
+      58: 3b 11 00 1a c2 01 00 80 dd ff	st	r22, [sp, #-12];		movxm	p4, #0x70400
+      62: 3b 11 00 02 c4 01 00 c0 ed ff	st	r23, [sp, #-8];		movxm	r0, #0x71400
+      6c: 3b 11 00 1e c0 01 00 00 08 ff	st	r0, [sp, #-64];		movxm	p0, #0x70c00
+      76: 3b 11 a0 1a c5 01 00 d0 28 ff	st	p0, [sp, #-56];		movxm	p2, #0x71540
+      80: 3b 11 c0 1a c7 01 00 d0 3c ff	st	p4, [sp, #-52];		movxm	p6, #0x71580
+      8a: 3b 11 80 9a c4 01 00 d0 4a ff	st	p2, [sp, #-48];		movxm	p1, #0x71500
+      94: 59 76 3c 1b  	mov	p3, p6
+      98: b5 ce fa 0f 04 00    	mova	r16, #0x0;		st	p1, [sp, #-44]
+      9e: 19 a0 03 0b  	st	r16, [p3], #4
+      a2: 19 a0 06 0b  	st	r16, [p3, #4]
+      a6: 7b 05 26 00 00 a0 02 0b 05 00	mova	r20, #0x0;		st	r16, [p3, #0];		movx	r19, #0x1
+
+000000b0 <.LBB0_1>:
+      b0: c0 03 00 00 00 00 00 00 00 00 00 48 e4 ff 00 00      	nopb	;		mova	r17, #-0x1;		nops	;		nopxm	;		nopv	
+      c0: 19 12 83 16  	acq	#0x34, r17

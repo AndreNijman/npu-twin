@@ -1,0 +1,37 @@
+# M5 proof — model xclbin is a real AIE-array binary; Peano emits AIE2 (EM_AIE 0x108) core code
+# (Magika group2 build artifacts)
+
+## AIE_PARTITION (the model occupies Phoenix NPU columns):
+  column_width: 2
+  start_columns: ['1', '2', '3']
+  operations_per_cycle: 2048
+  PDIs: 1
+
+## Core ELF header (Peano-built, per AIE2 tile):
+    Class:                             ELF32
+    Type:                              EXEC (Executable file)
+    Machine:                           <unknown>: 0x108
+
+## AIE2 VLIW disassembly (first instructions of main_core_1_3.elf):
+
+build/aie.mlir.prj/main_core_1_3.elf:	file format elf32-aie
+
+Disassembly of section .text:
+
+00000000 <__start>:
+       0: 15 01 00 88 0b 00    	jl	#0x1710
+       6: 55 00 e0 0c 07 00    	movxm	sp, #0x70000
+       c: 01 00        	nop	
+       e: 01 00        	nop	
+      10: 01 00        	nop	
+      12: 01 00        	nop	
+      14: 37 88 03 00 00 00 00 00 00 00 00 00  	nops	;		nopb	;		nopx	;		nopm	
+
+00000020 <main>:
+      20: 19 40 03 38  	paddb	[sp], #0x40
+      24: 19 ea fb 0f  	st	r21, [sp, #-36]
+      28: 19 64 fa 0f  	st	r18, [sp, #-48]
+      2c: 19 6c fc 0f  	st	r22, [sp, #-32]
+      30: 19 ee fc 0f  	st	r23, [sp, #-28]
+      34: 99 fe fd 0f  	st	p7, [sp, #-20]
+      38: 3b 11 10 c3 ea 01 00 c0 5c ff	st	r19, [sp, #-44];		movxm	r22, #0x7a620

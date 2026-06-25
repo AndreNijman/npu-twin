@@ -27,10 +27,16 @@ Windows/XDNA2-only (ADR-0002). The device enumerates, `amdxdna` loads, XRT
 lists it, and that's where the *AMD-stack* story ends for llama.cpp and OpenCV.
 
 **Phase 8 (2026-06) changes the ending.** Using the fully open
-IRON/mlir-aie/Peano stack — no Vitis, no VitisAI EP — a hand-written kernel now
-runs on the Phoenix NPU under Linux (`PASS!`, ~125 µs on-NPU on Void/kernel-7.0).
-See [`project-c/`](project-c/) and [ADR-0007](docs/decisions/0007-mlir-aie-over-vitisai.md).
-The repo still publishes the AMD-stack gap honestly — it just no longer ends there.
+IRON/mlir-aie/Peano stack — no Vitis, no VitisAI EP — hand-written kernels, then
+whole CNNs, then a **1B-parameter LLM** now run on the Phoenix NPU under Linux.
+The ladder climbs M1 passthrough → M2/M4 matmul → M3 int8 conv2d → M5 real CNNs
+(ResNet, Google's Magika) → **M6: Llama-3.2-1B-Instruct generates text with every
+weight matmul on the NPU** (bf16 GEMV; output token-identical to fp32, logits
+cosine 0.999992). See [`project-c/`](project-c/),
+[`project-c/m6-llm/`](project-c/m6-llm/), and
+[ADR-0007](docs/decisions/0007-mlir-aie-over-vitisai.md) /
+[ADR-0010](docs/decisions/0010-1b-llm-on-xdna1-npu.md). The repo still publishes
+the AMD-stack gap honestly — it just no longer ends there.
 
 ## Hardware tested
 
@@ -55,7 +61,7 @@ Full stack table in [`docs/hardware.md`](docs/hardware.md).
 | 5   | Hyprland wiring + README + daily-driver polish | ✅ |
 | 6   | Opportunistic XDNA 1 probe + honest gap writeup | ✅ |
 | 7   | Demo + `v0.1.0` | ✅ |
-| 8   | Project C: open mlir-aie/Peano on the XDNA 1 NPU — M1 passthrough · M2 matmul · M3 int8 conv2d · M4 whole-array 16-core (892 GFLOPS), all CPU-verified | ✅ |
+| 8   | Project C: open mlir-aie/Peano on the XDNA 1 NPU — M1 passthrough · M2 matmul · M3 int8 conv2d · M4 whole-array 16-core (892 GFLOPS) · M5 real CNNs (ResNet, Magika) · **M6 Llama-3.2-1B LLM** (every matmul on the NPU, bf16, fp32-verified), all golden-verified | ✅ |
 
 ## Install
 

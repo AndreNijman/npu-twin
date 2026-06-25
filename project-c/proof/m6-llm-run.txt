@@ -1,0 +1,25 @@
+# M6 — Llama-3.2-1B-Instruct generating with every weight matmul on the XDNA1 NPU
+# bf16 GEMV (matvec_vectorized_bf16_f32) on one AIE2 core; CPU does only norm/rope/softmax/argmax.
+# No CPU-fallback path: npu_gemv opens /dev/accel/accel0 and raises if absent.
+
+## greedy generation (backend=npu):
+[backend=npu] prompt_tokens=5: [791, 6864, 315, 9822, 374]
+
+=== generated 6 tokens in 35.9s (0.17 tok/s) ===
+TOKENS: [12366, 13, 578, 6864, 315, 10057]
+TEXT: ' Paris. The capital of Germany'
+FULL: 'The capital of France is Paris. The capital of Germany'
+
+## numerical verification — NPU forward vs full fp32 forward (same prompt):
+prompt: 'The capital of France is'  tokens=[128000, 791, 6864, 315, 9822, 374]
+[cpu_fp32] prefill 6 tok in 23.4s
+[npu]      prefill 6 tok in 23.5s
+
+logits cosine(npu,cpu_fp32) = 0.999992
+logits relL2                = 3.9246e-03
+argmax  cpu_fp32 = 12366 (' Paris')
+argmax  npu      = 12366 (' Paris')
+top5 cpu_fp32 = [12366, 264, 539, 1131, 1101]
+top5 npu      = [12366, 264, 539, 1131, 1101]
+
+VERIFY: PASS

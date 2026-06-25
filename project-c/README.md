@@ -45,6 +45,33 @@ Phoenix array** (`whole_array`, 512³ `i16`, Peano) ran at **891.5 GFLOPS** (NPU
 per-tile core objects (`core_{0..3}_{2..5}`) confirm whole-array placement; the
 npu1_4col verify mismatch (mlir-aie #1515) did not bite. `sg render -c 'bash run/run-m4.sh'`.
 
+**M5 — real models (2026-06-16):** beyond hand-written kernels, **whole neural
+networks** now run end-to-end on the Phoenix array, all matching a CPU/torch
+golden reference: a **ResNet int8 bottleneck block** (~1.7 ms), **Google's
+Magika** file-type-detection network — group0 (~0.6 ms, EVM −34.9 dB) and group2
+(~0.4 ms, EVM −56.9 dB) — and a **ResNet `conv2_x` stage** (3 chained bottleneck
+blocks, ~2.4 ms). This is the answer to "make AMD's official stack work on
+Linux": that stack (VitisAI EP) is a *verified* dead end on XDNA1/Linux (the
+closed `voe` Linux module does not exist; AMD's Ryzen AI 1.7.1 dropped XDNA1 from
+Linux support — see [ADR-0009](../docs/decisions/0009-official-stack-dead-real-models-via-open.md)),
+so the real models reach the NPU via the **open** stack instead. From
+mlir-aie `programming_examples/ml/{bottleneck,magika,resnet}`.
+
+**M6 — a 1B LLM (2026-06-25):** beyond CNNs, a full **Llama-3.2-1B-Instruct**
+now generates text with **every weight matmul on the NPU** — q/k/v/o, SwiGLU
+gate/up/down, and the tied 128256-wide lm_head (100% of the 1.24B params, >99%
+of FLOPs) each run as a **bf16 GEMV with f32 accumulate** on one AIE2 core; the
+CPU does only the parameter-free glue (RMSNorm, llama3 RoPE, GQA softmax, SiLU,
+argmax). Greedy on the NPU continues "The capital of France is" → "Paris. The
+capital of Germany" — **token-identical to the fp32 reference**; next-token
+logits match full fp32 at **cosine 0.999992** with identical top-5. No
+CPU-fallback path. The bf16 GEMV was enabled by uncommenting the `mv.cc` bf16
+combo (int16 would overflow the int32 accumulator over K=8192) —
+[`m6-llm/`](m6-llm/), [`m6-llm/PATCH-bf16-gemv.md`](m6-llm/PATCH-bf16-gemv.md),
+[ADR-0010](../docs/decisions/0010-1b-llm-on-xdna1-npu.md). Honest: a
+*runs-and-is-correct* result (~0.17 tok/s, single-core, per-call upload), not a
+speed one — the 780M iGPU still decodes this model ~2.2× faster.
+
 Proof artifacts are in [`proof/`](proof/):
 
 | File | What it shows |
@@ -61,6 +88,13 @@ Proof artifacts are in [`proof/`](proof/):
 | `m4-partition.txt` | the 16 distinct compute-tile objects + AIE partition |
 | `stretch-int8-matmul.txt` | int8 matmul: 148 GFLOPS single-core, 979 GFLOPS 16-core |
 | `stretch-conv-relu.txt` | int8 conv2d with fused ReLU (uint8), torch-verified |
+| `m5-models-run.txt` | the 4 whole-model runs (Bottleneck, Magika g0/g2, ResNet conv2_x): NPU time + PASS/EVM, golden-verified |
+| `m5-magika-aie2.disasm` | the model xclbin's `AIE_PARTITION` (Phoenix columns) + a Peano-built `EM_AIE` core ELF disassembling to AIE2 VLIW |
+| `m6-llm-run.txt` | M6: Llama-3.2-1B greedy generation on the NPU + NPU-vs-fp32 logits verify (`VERIFY: PASS`) |
+| `m6-chat-demo.txt` | M6: a chat-templated instruction → fluent, EOS-terminated answer, all matmuls on the NPU |
+| `m6-gemv-bf16-shapes.txt` | M6: bf16 GEMV vs numpy across every Llama Linear shape (relL2 ~1e-7, cos=1.0) |
+| `m6-gemv-bf16-aie2.disasm` | M6: the `matvec_vectorized_bf16_f32` core ELF is `EM_AIE` AIE2 VLIW (`movxm`/`paddb`/`acq` bundles) |
+| `m6-xrt-smi.txt` | M6: XRT enumerates the Phoenix NPU for the LLM run |
 
 ## The stack
 
@@ -129,5 +163,15 @@ M1 is a *passthrough* (toolchain + round-trip proof); **M2 is a real tuned
 kernel**, **M3 an int8 conv2d**, and **M4 the whole 16-tile array** (~892
 GFLOPS) — all CPU-verified. The ladder (see
 `docs/decisions/0008-passthrough-m1-poc.md`) is **complete: M1 ✅ M2 ✅ M3 ✅
-M4 ✅** — the open stack scales from one tile to the full Phoenix array. YuNet
-stays on CPU; a full model on the NPU is explicitly out of scope.
+M4 ✅** — the open stack scales from one tile to the full Phoenix array. **M5
+✅** then took it further: whole models (ResNet blocks, Google's Magika) run
+end-to-end on the NPU, golden-verified. **M6 ✅** is the top of the ladder: a
+full **1B-parameter LLM** (Llama-3.2-1B-Instruct) generates text with every
+weight matmul on the NPU (bf16 GEMV), fp32-verified. AMD's *official* model
+runtime (VitisAI EP) remains a verified dead end on XDNA1/Linux (ADR-0009);
+all of this reaches the NPU via the open stack. M6 is honestly a
+*runs-and-is-correct* result, not a fast one (~0.17 tok/s, single-core; the
+780M iGPU still decodes Llama-1B ~2.2× faster) — speeding it up (resident
+weights, whole-array GEMV, on-NPU norm/rope/softmax) is future work. project-b's
+own YuNet still runs on CPU (no automated ONNX→NPU frontend is wired up — these
+are IRON-described models / hand-orchestrated GEMV calls).

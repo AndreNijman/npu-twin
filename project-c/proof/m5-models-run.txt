@@ -1,0 +1,26 @@
+# M5 — real neural-network models running end-to-end on the XDNA1 Phoenix NPU (npu1), Linux, open stack (no Vitis)
+# Captured 2026-06-16T16:02:20Z | mlir_aie 1.3.3.dev8+g0d49a88 | Peano 21.0.0.2026061601 | XRT 2.25.0 | Python 3.14
+# Device:
+  NPU Firmware Version : 1.5.5.391
+|[0000:c6:00.1]  |RyzenAI-npu1  |aie2          |6x5       |
+
+## [1/4] Bottleneck — ResNet-style int8 residual block (1x1->3x3->1x1 conv + skip-add), torch-verified
+Avg NPU time: 1652us.
+PASS!
+
+## [2/4] Magika group0 — Google file-type-detection NN (bfloat16), EVM vs trained golden
+Avg NPU time: 608us.
+this evm: -34.85130793487328
+PASS.
+
+## [3/4] Magika group2 — second Magika sub-network (bfloat16)
+Avg NPU time: 436us.
+this evm: -56.910706812032586
+PASS.
+
+## [4/4] ResNet conv2_x — three chained bottleneck blocks (a real ResNet stage), int8, torch-verified
+NPU time     (avg/min/max us): 2624.4 / 2380.6 / 3035.4
+PASS!
+
+# All four PASS = NPU output matched the CPU/torch golden reference within tolerance.
+# These harnesses open /dev/accel/accel0 via pyxrt/DefaultNPURuntime and raise if absent — there is NO silent CPU-fallback path.

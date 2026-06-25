@@ -37,8 +37,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   512³–4096³, numpy-verified each point) — int8 throughput peaks **~2.0 TFLOPS at
   1024³** then declines (bandwidth-bound, well below the ~10 TOPS compute ceiling).
   Proof `stretch-int8-sweep.csv`.
+- Phase 8 **M5 — real models on the NPU**: whole neural networks run end-to-end on
+  the Phoenix array (Linux, open stack), each matching a CPU/torch golden
+  reference: a **ResNet int8 bottleneck block** (~1.7 ms), **Google's Magika**
+  file-type-detection NN — group0 (~0.6 ms, EVM −34.9 dB) and group2 (~0.4 ms,
+  EVM −56.9 dB) — and a **ResNet `conv2_x` stage** (3 chained bottleneck blocks,
+  ~2.4 ms). Lifts the M-ladder's "hand-written kernels only" scope. Proof
+  `m5-models-run.txt` + `m5-magika-aie2.disasm` (xclbin `AIE_PARTITION` + AIE2
+  `EM_AIE` core disassembly). See ADR-0009.
+- ADR-0009: **AMD's official stack (VitisAI EP) is a verified dead end on
+  XDNA1/Linux** as of 2026-06 (closed `voe` Linux module does not exist; Ryzen AI
+  1.7.1 dropped XDNA1 from Linux support; RyzenAI-SW #341 open) — *not* a stale
+  assumption (two adversarial reviewers, dated sources). Real models reach the NPU
+  via the open stack instead.
 - `xdna_probe.probe()`: new `npu-active-open-stack` verdict + `iron_runtime_importable`
   field — reports the open stack can drive the NPU (`pyxrt` + `xrt-smi` + device).
+- Phase 8 **M6 — a 1B-parameter LLM on the NPU** (`project-c/m6-llm/`):
+  **Llama-3.2-1B-Instruct** generates text with **every weight matmul** (q/k/v/o,
+  SwiGLU gate/up/down, tied 128256-wide lm_head — 100% of params, >99% of FLOPs)
+  executed on the XDNA1 NPU as a **bf16 GEMV with f32 accumulate**
+  (`matvec_vectorized_bf16_f32`, one AIE2 core); CPU does only the parameter-free
+  glue (RMSNorm, llama3 RoPE, GQA softmax, SiLU, argmax). Numerically faithful:
+  next-token logits cosine **0.999992** vs full fp32, identical argmax/top-5;
+  greedy output token-identical to the fp32 reference ("…is Paris. The capital of
+  Germany"); a chat-templated instruction yields a fluent, EOS-terminated answer.
+  No CPU-fallback path (opens `/dev/accel/accel0`, raises if absent). bf16 GEMV
+  enabled by uncommenting the `mv.cc` bf16 combo + a `kernels.mv()` signature
+  (`m6-llm/PATCH-bf16-gemv.md`) — int16 would overflow the int32 accumulator over
+  K=8192. Honest scope: a *runs-and-is-correct* result, ~0.17 tok/s (single-core,
+  per-call weight upload, M-blocked); the 780M iGPU still decodes this model ~2.2×
+  faster. `run/run-m6.sh`; proof `m6-llm-run.txt`, `m6-chat-demo.txt`,
+  `m6-gemv-bf16-shapes.txt`, `m6-gemv-bf16-aie2.disasm`, `m6-xrt-smi.txt`. See
+  ADR-0010.
 
 ### Changed
 - ADR-0002's "no usable NPU compute on Linux" premise is **superseded** by

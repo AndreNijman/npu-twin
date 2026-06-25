@@ -1,0 +1,9 @@
+# M6 — chat demo: an instruction-following response generated with every matmul on the NPU
+# Llama-3.2-1B-Instruct, llama3 chat template, greedy, backend=npu
+
+[backend=npu] prompt_tokens=20: [128000, 128006, 882, 128007, 271, 644, 832, 11914, 11, 1148, 374, 459, 452, 6459, 30, 128009, 128006, 78191, 128007, 271]
+
+=== generated 37 tokens in 142.3s (0.26 tok/s) ===
+TOKENS: [2127, 452, 6459, 320, 68837, 950, 29225, 8113, 8, 374, 264, 6767, 315, 279, 8863, 2410, 315, 264, 6500, 596, 8792, 8863, 5089, 320, 32715, 705, 19392, 1268, 1690, 29217, 433, 649, 2804, 824, 2132, 13, 128009]
+TEXT: "An NPU (Numerical Processing Unit) is a measure of the processing power of a computer's central processing unit (CPU), indicating how many calculations it can perform per second."
+FULL: "user\n\nIn one sentence, what is an NPU?assistant\n\nAn NPU (Numerical Processing Unit) is a measure of the processing power of a computer's central processing unit (CPU), indicating how many calculations it can perform per second."
